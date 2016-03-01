@@ -1,0 +1,4 @@
+Build:###BUILD###
+Date:###DATE###
+SDK:###SDK###
+IGTUnity:###IGTUNITY###

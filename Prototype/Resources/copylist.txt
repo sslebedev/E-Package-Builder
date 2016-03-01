@@ -1,0 +1,10 @@
+﻿AssemblyProjects
+Assets
+EGMResources
+Paytables
+ProjectSettings
+Registries
+SIF
+AssemblyProjects.config
+GameVersion.txt
+SystemConfig.xml

@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="E Package Builder " company="United Saber Students Recon " webLink="" view-date="2016-02-08" view-index="0" gantt-divider-location="491" resource-divider-location="300" version="2.7.2" locale="ru_RU">
+<?xml version="1.0" encoding="UTF-8"?><project name="E Package Builder " company="United Saber Students Recon " webLink="" view-date="2016-02-22" view-index="0" gantt-divider-location="491" resource-divider-location="300" version="2.7.2" locale="ru_RU">
     <description/>
-    <view zooming-state="default:6" id="gantt-chart">
+    <view zooming-state="default:5" id="gantt-chart">
         <field id="tpd3" name="Название" width="65" order="0"/>
         <field id="tpd4" name="Дата начала" width="17" order="1"/>
         <field id="tpd5" name="Дата окончания" width="17" order="2"/>
-        <option id="color.recent"><![CDATA[#ff6600 #339900 #f4f4f4 #ff0000]]></option>
+        <option id="color.recent"><![CDATA[#339900 #ff6600 #f4f4f4 #ff0000]]></option>
     </view>
     <view id="resource-table">
         <field id="0" name="Имя" width="50" order="0"/>
@@ -37,24 +37,24 @@
         <task id="3" name="старт проекта (веха)" color="#8cb6ce" meeting="true" start="2016-02-19" duration="0" complete="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="0" name="техническое задание" color="#822111" meeting="false" start="2016-02-19" duration="18" complete="15" priority="4" expand="true">
+        <task id="0" name="техническое задание" color="#8cb6ce" meeting="false" start="2016-02-19" duration="25" complete="52" priority="4" expand="true">
             <notes><![CDATA[(17)]]></notes>
             <task id="4" name="набросок тз." color="#339900" meeting="false" start="2016-02-19" duration="2" complete="100" expand="true">
                 <notes><![CDATA[(6)
 ]]></notes>
                 <depend id="5" type="2" difference="5" hardness="Strong"/>
             </task>
-            <task id="5" name="диаграмма Ганта тз." color="#339900" meeting="false" start="2016-02-26" duration="2" complete="0" expand="true">
+            <task id="5" name="диаграмма Ганта тз." color="#339900" meeting="false" start="2016-02-26" duration="2" complete="100" expand="true">
                 <notes><![CDATA[(8)]]></notes>
                 <depend id="6" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="6" name="финализация тз." color="#8cb6ce" meeting="false" start="2016-02-28" duration="9" complete="0" expand="true">
+            <task id="6" name="финализация тз." color="#8cb6ce" meeting="false" start="2016-02-28" duration="16" complete="40" expand="true">
                 <notes><![CDATA[(3)]]></notes>
-                <task id="97" name="финализация п1" color="#339900" meeting="false" start="2016-02-28" duration="2" complete="0" expand="true">
+                <task id="97" name="финализация п1" color="#339900" meeting="false" start="2016-02-28" duration="2" complete="100" expand="true">
                     <notes><![CDATA[(3)]]></notes>
-                    <depend id="99" type="2" difference="4" hardness="Strong"/>
+                    <depend id="99" type="2" difference="11" hardness="Strong"/>
                 </task>
-                <task id="99" name="финализация п2" color="#8cb6ce" meeting="false" start="2016-03-05" duration="3" complete="0" expand="true">
+                <task id="99" name="финализация п2" color="#8cb6ce" meeting="false" start="2016-03-12" duration="3" complete="0" expand="true">
                     <notes><![CDATA[(-)]]></notes>
                 </task>
             </task>
@@ -62,7 +62,7 @@
         <task id="114" name="прототип (веха)" color="#8cb6ce" meeting="true" start="2016-02-22" duration="0" complete="0" expand="true">
             <depend id="1" type="1" difference="0" hardness="Strong"/>
         </task>
-        <task id="1" name="прототип" color="#ff6600" meeting="false" start="2016-02-22" duration="5" complete="97" priority="4" expand="true">
+        <task id="1" name="прототип" color="#339900" meeting="false" start="2016-02-22" duration="5" complete="99" priority="4" expand="true">
             <notes><![CDATA[(40)]]></notes>
             <depend id="18" type="2" difference="2" hardness="Strong"/>
             <task id="7" name="интерфейс прот." color="#339900" meeting="false" start="2016-02-22" duration="1" complete="100" expand="true">
@@ -79,7 +79,7 @@
                 <notes><![CDATA[(8)]]></notes>
                 <depend id="10" type="2" difference="0" hardness="Rubber"/>
             </task>
-            <task id="10" name="фича билды юнити прот." color="#ff0000" meeting="false" start="2016-02-25" duration="1" complete="90" expand="true">
+            <task id="10" name="фича билды юнити прот." color="#339900" meeting="false" start="2016-02-25" duration="1" complete="100" expand="true">
                 <notes><![CDATA[(8)]]></notes>
                 <depend id="12" type="2" difference="0" hardness="Rubber"/>
             </task>
@@ -92,7 +92,7 @@
         </task>
         <task id="32" name="рефакторинг" color="#ff6600" meeting="false" start="2016-02-29" duration="3" complete="16" expand="true">
             <notes><![CDATA[(8)]]></notes>
-            <depend id="51" type="2" difference="3" hardness="Strong"/>
+            <depend id="127" type="2" difference="0" hardness="Strong"/>
             <task id="34" name="выделение функциональности в библиотеку" color="#ff6600" meeting="false" start="2016-02-29" duration="1" complete="50" expand="true">
                 <notes><![CDATA[(4)]]></notes>
                 <depend id="35" type="2" difference="0" hardness="Strong"/>
@@ -106,22 +106,22 @@
             <depend id="47" type="1" difference="0" hardness="Strong"/>
         </task>
         <task id="47" name="улучшения" color="#8cb6ce" meeting="false" start="2016-03-06" duration="20" complete="0" expand="true">
-            <notes><![CDATA[(63)]]></notes>
+            <notes><![CDATA[(91)]]></notes>
             <depend id="156" type="2" difference="0" hardness="Strong"/>
             <task id="13" name="разделение клиента и сервера" color="#8cb6ce" meeting="false" start="2016-03-06" duration="14" complete="0" expand="true">
-                <notes><![CDATA[(28)]]></notes>
+                <notes><![CDATA[(56)]]></notes>
                 <depend id="14" type="2" difference="0" hardness="Rubber"/>
                 <task id="127" name="серверное приложение" color="#8cb6ce" meeting="false" start="2016-03-06" duration="4" complete="0" expand="true">
-                    <notes><![CDATA[(12)]]></notes>
+                    <notes><![CDATA[(24)]]></notes>
                     <depend id="134" type="2" difference="0" hardness="Strong"/>
                 </task>
                 <task id="134" name="интерфейс с клиентом" color="#8cb6ce" meeting="false" start="2016-03-10" duration="4" complete="0" expand="true">
-                    <notes><![CDATA[(8)]]></notes>
+                    <notes><![CDATA[(16)]]></notes>
                     <depend id="129" type="2" difference="0" hardness="Strong"/>
                     <depend id="132" type="2" difference="0" hardness="Strong"/>
                 </task>
                 <task id="129" name="очередь задач" color="#8cb6ce" meeting="false" start="2016-03-14" duration="6" complete="0" expand="true">
-                    <notes><![CDATA[(8)]]></notes>
+                    <notes><![CDATA[(16)]]></notes>
                 </task>
             </task>
             <task id="14" name="клиент WPF" color="#8cb6ce" meeting="false" start="2016-03-20" duration="3" complete="0" expand="true">
@@ -138,7 +138,7 @@
         <task id="112" name="документация (веха)" color="#8cb6ce" meeting="true" start="2016-03-26" duration="0" complete="0" expand="true">
             <depend id="249" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="249" name="документация" color="#000000" meeting="false" start="2016-03-26" duration="4" complete="0" expand="true">
+        <task id="249" name="документация" color="#8cb6ce" meeting="false" start="2016-03-26" duration="4" complete="0" expand="true">
             <notes><![CDATA[(4)]]></notes>
             <depend id="156" type="2" difference="0" hardness="Strong"/>
             <task id="246" name="документация пользователя" color="#8cb6ce" meeting="false" start="2016-03-26" duration="2" complete="0" expand="true">
@@ -152,24 +152,24 @@
         </task>
         <task id="156" name="тестирование (веха)" color="#8cb6ce" meeting="true" start="2016-03-30" duration="0" complete="0" expand="true">
             <depend id="25" type="2" difference="0" hardness="Strong"/>
-            <depend id="208" type="2" difference="0" hardness="Strong"/>
+            <depend id="214" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="250" name="тестирование" color="#000000" meeting="false" start="2016-03-30" duration="40" complete="0" expand="true">
-            <notes><![CDATA[(21)]]></notes>
-            <task id="208" name="MOC" color="#000000" meeting="false" start="2016-03-30" duration="2" complete="0" expand="true">
-                <notes><![CDATA[(6)]]></notes>
-                <depend id="214" type="2" difference="0" hardness="Strong"/>
-                <task id="210" name="Unity" color="#8cb6ce" meeting="false" start="2016-03-30" duration="2" complete="0" expand="true">
-                    <notes><![CDATA[(3)]]></notes>
-                </task>
-                <task id="211" name="Game Check" color="#8cb6ce" meeting="false" start="2016-03-30" duration="2" complete="0" expand="true">
-                    <notes><![CDATA[(3)]]></notes>
-                </task>
+        <task id="208" name="MOC" color="#8cb6ce" meeting="false" start="2016-03-12" duration="2" complete="0" expand="true">
+            <notes><![CDATA[(6)]]></notes>
+            <depend id="214" type="2" difference="0" hardness="Strong"/>
+            <task id="210" name="Unity" color="#8cb6ce" meeting="false" start="2016-03-12" duration="2" complete="0" expand="true">
+                <notes><![CDATA[(3)]]></notes>
             </task>
-            <task id="214" name="модульное тестирование" color="#000000" meeting="false" start="2016-04-01" duration="8" complete="0" expand="true">
+            <task id="211" name="Game Check" color="#8cb6ce" meeting="false" start="2016-03-12" duration="2" complete="0" expand="true">
+                <notes><![CDATA[(3)]]></notes>
+            </task>
+        </task>
+        <task id="250" name="тестирование" color="#8cb6ce" meeting="false" start="2016-03-30" duration="40" complete="0" expand="true">
+            <notes><![CDATA[(21)]]></notes>
+            <task id="214" name="модульное тестирование" color="#8cb6ce" meeting="false" start="2016-03-30" duration="10" complete="0" expand="true">
                 <notes><![CDATA[(12)]]></notes>
                 <depend id="229" type="2" difference="0" hardness="Strong"/>
-                <task id="223" name="интерфейс" color="#8cb6ce" meeting="false" start="2016-04-01" duration="1" complete="0" expand="true">
+                <task id="223" name="интерфейс" color="#8cb6ce" meeting="false" start="2016-03-30" duration="1" complete="0" expand="true">
                     <notes><![CDATA[(2)]]></notes>
                 </task>
                 <task id="221" name="сетевой протокол" color="#8cb6ce" meeting="false" start="2016-04-01" duration="2" complete="0" expand="true">
@@ -210,7 +210,7 @@
             </task>
         </task>
         <task id="25" name="релиз (веха)" color="#8cb6ce" meeting="true" start="2016-05-09" duration="0" complete="0" expand="true">
-            <notes><![CDATA[153]]></notes>
+            <notes><![CDATA[181]]></notes>
         </task>
     </tasks>
     <resources>

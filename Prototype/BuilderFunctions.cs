@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-namespace EGMPackageBuilder
+namespace EPackageBuilder
 {
     public class BuilderFunctions
     {

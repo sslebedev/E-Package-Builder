@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace EGMPackageBuilder.Properties
+namespace EPackageBuilder.Properties
 {
 
 

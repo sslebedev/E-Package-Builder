@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-namespace EGMPackageBuilder
+namespace EPackageBuilder
 {
     public class BuilderFunctions
     {
@@ -295,7 +295,7 @@ namespace EGMPackageBuilder
         public static void ProcessBuild(string unity, string buildType, string pathSources, string pathBuild, ILogger logger)
         {
             const string formatUnityArgs = "-batchmode -nographics -quit -projectPath \"{0}\" -executeMethod {1} -logFile \"{2}\"";
-            const string formatCommand = "CommandLineBuild.{0}Game";
+            const string formatCommand = "S3dCommandLineBuild.{0}Game";
             
             var logFile = Application.LocalUserAppDataPath + "\\BuildLog.txt";
             

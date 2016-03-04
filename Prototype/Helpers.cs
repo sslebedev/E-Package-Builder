@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace EGMPackageBuilder
+namespace EPackageBuilder
 {
     class Helpers
     {

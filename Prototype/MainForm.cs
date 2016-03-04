@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using EGMPackageBuilder.Properties;
+using EPackageBuilder.Properties;
 
-namespace EGMPackageBuilder
+namespace EPackageBuilder
 {
     public partial class MainWindow : Form, BuilderFunctions.ILogger
     {
@@ -49,7 +49,7 @@ namespace EGMPackageBuilder
             buttonShowVersion.Enabled = !state;
             buttonGameCheck.Enabled = !state;
             buttonBuildPc.Enabled = !state;
-            buttonBuildEgm.Enabled = !state;
+            buttonBuildRelease.Enabled = !state;
             buttonDoAll.Enabled = !state;
             buttonZip.Enabled = !state;
 
@@ -314,7 +314,7 @@ namespace EGMPackageBuilder
             StartBlockingActivity(() => BuilderFunctions.ProcessBuild(externalPaths.UnityPath, BuilderFunctions.BuildTypes.Standalone, tbPathProject.Text, Path.Combine(tbPathBuilds.Text, "Standalone"), this));
         }
 
-        private void buttonBuildEgm_Click(object sender, EventArgs e)
+        private void buttonBuildRelease_Click(object sender, EventArgs e)
         {
             StartBlockingActivity(() => BuilderFunctions.ProcessBuild(externalPaths.UnityPath, BuilderFunctions.BuildTypes.Release, tbPathProject.Text, Path.Combine(tbPathBuilds.Text, "Release"), this));
         }

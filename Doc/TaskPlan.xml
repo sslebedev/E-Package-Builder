@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><project name="EGM Package Builder " company="United Saber Students Recon " webLink="" view-date="2016-02-08" view-index="0" gantt-divider-location="491" resource-divider-location="300" version="2.7.2" locale="ru_RU">
+<?xml version="1.0" encoding="UTF-8"?><project name="EGM Package Builder " company="United Saber Students Recon " webLink="" view-date="2016-02-15" view-index="0" gantt-divider-location="491" resource-divider-location="300" version="2.7.2" locale="ru_RU">
     <description/>
     <view zooming-state="default:6" id="gantt-chart">
         <field id="tpd3" name="Название" width="65" order="0"/>
@@ -37,7 +37,7 @@
         <task id="3" name="старт проекта (веха)" color="#8cb6ce" meeting="true" start="2016-02-19" duration="0" complete="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="0" name="техническое задание" color="#822111" meeting="false" start="2016-02-19" duration="18" complete="15" priority="4" expand="true">
+        <task id="0" name="техническое задание" color="#8cb6ce" meeting="false" start="2016-02-19" duration="18" complete="15" priority="4" expand="true">
             <notes><![CDATA[(17)]]></notes>
             <task id="4" name="набросок тз." color="#339900" meeting="false" start="2016-02-19" duration="2" complete="100" expand="true">
                 <notes><![CDATA[(6)

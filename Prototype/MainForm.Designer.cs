@@ -1,4 +1,4 @@
-﻿namespace EGMPackageBuilder
+﻿namespace EPackageBuilder
 {
     partial class MainWindow
     {
@@ -45,7 +45,7 @@
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.buttonBuildPc = new System.Windows.Forms.Button();
-            this.buttonBuildEgm = new System.Windows.Forms.Button();
+            this.buttonBuildRelease = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.buttonMakeSources = new System.Windows.Forms.Button();
             this.cbReqOpenExplorer = new System.Windows.Forms.CheckBox();
@@ -251,7 +251,7 @@
             // 
             this.groupBox6.Controls.Add(this.label6);
             this.groupBox6.Controls.Add(this.buttonBuildPc);
-            this.groupBox6.Controls.Add(this.buttonBuildEgm);
+            this.groupBox6.Controls.Add(this.buttonBuildRelease);
             this.groupBox6.Location = new System.Drawing.Point(316, 185);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(121, 106);
@@ -279,16 +279,16 @@
             this.buttonBuildPc.UseVisualStyleBackColor = true;
             this.buttonBuildPc.Click += new System.EventHandler(this.buttonBuildPc_Click);
             // 
-            // buttonBuildEgm
+            // buttonBuildRelease
             // 
-            this.buttonBuildEgm.Enabled = false;
-            this.buttonBuildEgm.Location = new System.Drawing.Point(6, 48);
-            this.buttonBuildEgm.Name = "buttonBuildEgm";
-            this.buttonBuildEgm.Size = new System.Drawing.Size(103, 23);
-            this.buttonBuildEgm.TabIndex = 23;
-            this.buttonBuildEgm.Text = "EGM";
-            this.buttonBuildEgm.UseVisualStyleBackColor = true;
-            this.buttonBuildEgm.Click += new System.EventHandler(this.buttonBuildEgm_Click);
+            this.buttonBuildRelease.Enabled = false;
+            this.buttonBuildRelease.Location = new System.Drawing.Point(6, 48);
+            this.buttonBuildRelease.Name = "buttonBuildRelease";
+            this.buttonBuildRelease.Size = new System.Drawing.Size(103, 23);
+            this.buttonBuildRelease.TabIndex = 23;
+            this.buttonBuildRelease.Text = "Release";
+            this.buttonBuildRelease.UseVisualStyleBackColor = true;
+            this.buttonBuildRelease.Click += new System.EventHandler(this.buttonBuildRelease_Click);
             // 
             // groupBox5
             // 
@@ -595,7 +595,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(596, 568);
             this.Name = "MainWindow";
-            this.Text = "EGM Package Builder";
+            this.Text = "E Package Builder";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainWindow_FormClosed);
             this.Load += new System.EventHandler(this.MainWindow_Load);
             this.groupBox1.ResumeLayout(false);
@@ -657,7 +657,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.Button buttonBuildPc;
-        private System.Windows.Forms.Button buttonBuildEgm;
+        private System.Windows.Forms.Button buttonBuildRelease;
         private System.Windows.Forms.Button buttonBrowseBuildsFolder;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserBuilds;
         private System.Windows.Forms.Label label6;

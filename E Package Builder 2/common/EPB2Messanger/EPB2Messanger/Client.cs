@@ -13,6 +13,12 @@ namespace EPB2Messanger
       private Socket _socket;
       private bool _valid;
 
+      public event Action OnServerConnected;
+      public event Action OnServerDisconnected;
+
+      public delegate void ServerMsgAction(ReceivedMessage msg);
+      public event ServerMsgAction OnServerMsgReceived;
+
       public Client()
       {
          _valid = true;
@@ -26,22 +32,6 @@ namespace EPB2Messanger
          }
          return new WritableMessage(_socket);
       }
-
-      //internal ReceivedMessage ReceiveMessage()
-      //{
-      //   string msgName = Messages.ReceiveMessage(_socket);
-      //   if (msgName == null) {
-      //      _valid = false;
-      //      return null;
-      //   }
-      //   string msg = Messages.ReceiveMessage(_socket);
-      //   if (msg == null) {
-      //      _valid = false;
-      //      return null;
-      //   }
-      //
-      //   return new ReceivedMessage(msgName, msg);
-      //}
 
       public bool Connect(string serverIP, int port, string connectionMsg)
       {
@@ -61,6 +51,15 @@ namespace EPB2Messanger
          newMsg.WriteName("ConnectionMessage");
          newMsg.Write(connectionMsg);
          newMsg.Send();
+
+         if (OnServerConnected != null)
+         {
+            OnServerConnected();
+         }
+
+         AsyncMessageReceiver.ReceiveAsync(_socket, null,
+            (param, msg) => { if (OnServerMsgReceived != null) OnServerMsgReceived(msg); },
+            (param)      => { if (OnServerDisconnected != null) OnServerDisconnected(); });
          return true;
       }
 
@@ -68,6 +67,11 @@ namespace EPB2Messanger
       {
          _socket.Shutdown(SocketShutdown.Both);
          _socket.Close();
+
+         if (OnServerDisconnected != null)
+         {
+            OnServerDisconnected();
+         }
       }
    }
 }

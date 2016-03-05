@@ -28,7 +28,7 @@ namespace EPB2Client
       {
          Int32 port;
          if (!Int32.TryParse(textPort.Text, out port) ||
-            !BuilderClient.Connect(textServerIP.Text, port))
+            !ClientStorage.Client.Connect(textServerIP.Text, port, "EPB2Client"))
          {
             MessageBox.Show("Connection failed!");
          }

@@ -11,6 +11,19 @@ namespace EPB2Messanger
 {
    public class Server
    {
+      private readonly Socket _serverSocket;
+
+      public Server(int port = 11000, int backlog = 100)
+      {
+         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, port);
+         _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+         _serverSocket.Bind(ipEndPoint);
+         _serverSocket.Listen(backlog);
+      }
+
+      #region Remote Client
+
       public class RemoteClient
       {
          private readonly Socket _socket;
@@ -43,20 +56,19 @@ namespace EPB2Messanger
          }
       }
 
-      public delegate void RemoteClientAction(RemoteClient client, ReceivedMessage msg);
-      public event RemoteClientAction OnCleintConnected;
-      public event RemoteClientAction OnClientMsgReceived;
+      public delegate void RemoteClientMsgAction(RemoteClient client, ReceivedMessage msg);
+      public event RemoteClientMsgAction OnCleintConnected;
+      public event RemoteClientMsgAction OnClientMsgReceived;
 
-      private readonly Socket _serverSocket;
+      public delegate void RemoteClientAction(RemoteClient client);
+      public event RemoteClientAction OnClientDisconnected;
 
-      public Server(int port = 11000, int backlog = 100)
-      {
-         IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, port);
-         _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+      #endregion
 
-         _serverSocket.Bind(ipEndPoint);
-         _serverSocket.Listen(backlog);
-      }
+      #region Start Server
+
+      private readonly object _msgReceivedLock = new object();
+      private readonly object _disconnectedLock = new object();
 
       public void Start()
       {
@@ -77,13 +89,11 @@ namespace EPB2Messanger
                OnCleintConnected(client, connectionMsg);
             }
 
-            //new ClientMessageReceiver(client, this).RunAsync();
-            AsyncMessageReceiver.ReceiveAsync(clientSocket, client, OnMsgReceived);
+            AsyncMessageReceiver.ReceiveAsync(clientSocket, client, OnMsgReceived, OnClientDiconnected);
          }
       }
 
-      private readonly object _msgReceivedLock = new object();
-      internal void OnMsgReceived(object param, ReceivedMessage msg)
+      private void OnMsgReceived(object param, ReceivedMessage msg)
       {
          lock (_msgReceivedLock)
          {
@@ -94,36 +104,17 @@ namespace EPB2Messanger
          }
       }
 
-      private class ClientMessageReceiver
+      private void OnClientDiconnected(object param)
       {
-         private readonly RemoteClient _client;
-         private readonly Server _server;
-
-         public ClientMessageReceiver(RemoteClient client, Server server)
+         lock (_disconnectedLock)
          {
-            _client = client;
-            _server = server;
-         }
-
-         public void RunAsync()
-         {
-            Thread t = new Thread(new ThreadStart(this.Run));
-            t.Start();
-         }
-
-         private void Run()
-         {
-            while (true)
+            if (OnClientDisconnected != null)
             {
-               ReceivedMessage msg = _client.ReceiveMessage();
-               if (msg == null)
-               {
-                  // client disconnected
-                  break;
-               }
-               _server.OnMsgReceived(_client, msg);
+               OnClientDisconnected((RemoteClient)param);
             }
          }
       }
+
+      #endregion
    }
 }

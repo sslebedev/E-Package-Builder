@@ -77,45 +77,48 @@ namespace EPB2Messanger
 
    internal class AsyncMessageReceiver
    {
-      public delegate void OnMsgAction(object param, ReceivedMessage msg);
+      public delegate void MsgAction(object param, ReceivedMessage msg);
+      public delegate void DisconnectedAction(object param);
 
       private readonly object _param;
       private readonly Socket _socket;
-      private readonly OnMsgAction _onMsg;
+      private readonly MsgAction _onMsg;
+      private readonly DisconnectedAction _onDisconnected;
 
-      public static void ReceiveAsync(Socket s, object param, OnMsgAction onMsgReceived)
+      public static void ReceiveAsync(Socket s, object param, MsgAction onMsg, DisconnectedAction onDisconnected)
       {
-         new AsyncMessageReceiver(s, param, onMsgReceived).RunAsync();
+         new AsyncMessageReceiver(s, param, onMsg, onDisconnected).RunAsync();
       }
 
-      private AsyncMessageReceiver(Socket s, object param, OnMsgAction onMsgReceived)
+      private AsyncMessageReceiver(Socket s, object param, MsgAction onMsg, DisconnectedAction onDisconnected)
       {
          _param = param;
          _socket = s;
-         _onMsg = onMsgReceived;
+         _onMsg = onMsg;
+         _onDisconnected = onDisconnected;
       }
 
       private void RunAsync()
       {
-         Thread t = new Thread(new ThreadStart(this.Run));
-         t.Start();
-      }
-
-      private void Run()
-      {
-         while (true)
+         new Thread(new ThreadStart(() =>
          {
-            ReceivedMessage msg = ReceivedMessage.New(_socket);
-            if (msg == null)
+            while (true)
             {
-               // client disconnected
-               break;
+               ReceivedMessage msg = ReceivedMessage.New(_socket);
+               if (msg == null)
+               {
+                  if (_onDisconnected != null)
+                  {
+                     _onDisconnected(_param);
+                  }
+                  break;
+               }
+               if (_onMsg != null)
+               {
+                  _onMsg(_param, msg);
+               }
             }
-            if (_onMsg != null)
-            {
-               _onMsg(_param, msg);
-            }
-         }
+         })).Start();
       }
    }
 

@@ -24,6 +24,11 @@ namespace EPB2Server
          newMsg.Send();
       }
 
+      private static void OnClientDisconnected(Server.RemoteClient client)
+      {
+         Console.WriteLine("Client disconnected");
+      }
+
       private static void OnClientMsgReceived(Server.RemoteClient client, ReceivedMessage message)
       {
          string msgName = message.ReadName();
@@ -53,6 +58,7 @@ namespace EPB2Server
 
          server.OnCleintConnected += OnClientConnected;
          server.OnClientMsgReceived += OnClientMsgReceived;
+         server.OnClientDisconnected += OnClientDisconnected;
 
          server.Start();
       }

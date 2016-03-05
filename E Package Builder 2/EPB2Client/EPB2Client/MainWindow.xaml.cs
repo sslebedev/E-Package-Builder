@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using EPB2Messanger;
 
 namespace EPB2Client
 {
@@ -25,9 +26,15 @@ namespace EPB2Client
       {
          InitializeComponent();
 
-         BuilderClient.Init();
-         BuilderClient.OnServerConnected += OnServerConnected;
-         BuilderClient.OnServerDisconnected += OnServerDisconnected;
+         ClientStorage.Init();
+         ClientStorage.Client.OnServerConnected += OnServerConnected;
+         ClientStorage.Client.OnServerDisconnected += OnServerDisconnected;
+         ClientStorage.Client.OnServerMsgReceived += OnServerMsgReceived;
+      }
+
+      private void OnServerMsgReceived(ReceivedMessage msg)
+      {
+
       }
 
       private void OnServerConnected()
@@ -37,7 +44,10 @@ namespace EPB2Client
 
       private void OnServerDisconnected()
       {
-         mainGrid.Background = (Brush)this.Resources["NonConnectedBrush"];
+         Delegate onServerDisconnected = new Action(() =>
+            { mainGrid.Background = (Brush)this.Resources["NonConnectedBrush"]; });
+
+         Dispatcher.Invoke(onServerDisconnected, null);
       }
 
       private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -48,13 +58,16 @@ namespace EPB2Client
 
       private void MenuItem_Click_2(object sender, RoutedEventArgs e)
       {
-         BuilderClient.Discinnect();
+         ClientStorage.Client.Disconnect();
       }
 
       private void Button_Click_1(object sender, RoutedEventArgs e)
       {
-         BuilderClient.SendMessage(string.Format("Message {0}: {1}",
+         WritableMessage msg = ClientStorage.Client.NewMessage();
+         msg.WriteName("Text");
+         msg.Write(string.Format("Message {0}: {1}",
             messageCount++, textMessage.Text));
+         msg.Send();
       }
    }
 }

@@ -18,6 +18,6 @@ It is inner development file but also stored as 'pdf' because of its graphical c
 
 ## Code reusability
 
-Project programming language: C# 4.0
+Project programming language: C# 5.0
 
 Project contents samples of working with SVN, WPF, XML, Zip, Socket, multithreading, process execution and result handling.

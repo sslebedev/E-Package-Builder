@@ -4,3 +4,6 @@
 
 # Ignore ReSharper
 **/*_ReSharper*
+
+# Ignore .suo
+**/*.suo

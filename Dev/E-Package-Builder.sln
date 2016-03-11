@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPBClient", "EPBClient\EPBClient.csproj", "{D04D93C3-629F-47DB-9281-BA601C2A108B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPBServer", "EPBServer\EPBServer.csproj", "{EE990AA6-3C39-41AA-915F-DCCC916BDA77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "messenger", "Common\messenger\messenger.csproj", "{956DFD65-A4E7-4F64-B517-E057BD681537}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D04D93C3-629F-47DB-9281-BA601C2A108B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D04D93C3-629F-47DB-9281-BA601C2A108B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D04D93C3-629F-47DB-9281-BA601C2A108B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D04D93C3-629F-47DB-9281-BA601C2A108B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE990AA6-3C39-41AA-915F-DCCC916BDA77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE990AA6-3C39-41AA-915F-DCCC916BDA77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE990AA6-3C39-41AA-915F-DCCC916BDA77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE990AA6-3C39-41AA-915F-DCCC916BDA77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{956DFD65-A4E7-4F64-B517-E057BD681537}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{956DFD65-A4E7-4F64-B517-E057BD681537}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{956DFD65-A4E7-4F64-B517-E057BD681537}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{956DFD65-A4E7-4F64-B517-E057BD681537}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

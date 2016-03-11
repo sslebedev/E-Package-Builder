@@ -1,3 +1,6 @@
-/Prototype/bin/Debug
-/Prototype/_ReSharper.EPBPrototype
-/Prototype/obj
+# Ignore in any directory
+**/bin
+**/obj
+
+# Ignore ReSharper
+**/*_ReSharper*

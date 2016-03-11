@@ -37,7 +37,7 @@
         <task id="3" name="старт проекта (веха)" color="#8cb6ce" meeting="true" start="2016-02-19" duration="0" complete="0" expand="true">
             <depend id="0" type="2" difference="0" hardness="Strong"/>
         </task>
-        <task id="0" name="техническое задание" color="#8cb6ce" meeting="false" start="2016-02-19" duration="25" complete="52" priority="4" expand="true">
+        <task id="0" name="техническое задание" color="#8cb6ce" meeting="false" start="2016-02-19" duration="25" complete="90" priority="4" expand="true">
             <notes><![CDATA[(17)]]></notes>
             <task id="4" name="набросок тз." color="#339900" meeting="false" start="2016-02-19" duration="2" complete="100" expand="true">
                 <notes><![CDATA[(6)
@@ -48,13 +48,13 @@
                 <notes><![CDATA[(8)]]></notes>
                 <depend id="6" type="2" difference="0" hardness="Strong"/>
             </task>
-            <task id="6" name="финализация тз." color="#8cb6ce" meeting="false" start="2016-02-28" duration="16" complete="40" expand="true">
+            <task id="6" name="финализация тз." color="#8cb6ce" meeting="false" start="2016-02-28" duration="16" complete="88" expand="true">
                 <notes><![CDATA[(3)]]></notes>
                 <task id="97" name="финализация п1" color="#339900" meeting="false" start="2016-02-28" duration="2" complete="100" expand="true">
                     <notes><![CDATA[(3)]]></notes>
                     <depend id="99" type="2" difference="11" hardness="Strong"/>
                 </task>
-                <task id="99" name="финализация п2" color="#8cb6ce" meeting="false" start="2016-03-12" duration="3" complete="0" expand="true">
+                <task id="99" name="финализация п2" color="#8cb6ce" meeting="false" start="2016-03-12" duration="3" complete="80" expand="true">
                     <notes><![CDATA[(-)]]></notes>
                 </task>
             </task>

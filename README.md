@@ -6,7 +6,7 @@ E Package Builder is a package of applications automating piplene of preparing i
 
 ## Dcoumentation content
 
-Documentation text files are stored in 'Google Documents' because it is free document editor and documents are easy to access. But oter files are stored in `Doc` directory.
+Documentation text files are stored in 'Google Documents' because it is free document editor and documents are easy to access from everywhere. But other files are stored in `Doc` directory.
 
 * Full project specification: EPB Project Spec, [GoogleDocs](https://docs.google.com/document/d/1xgHXwJyjObGUEnzt0dRfO7efVcofKx1lMdDUTKrbd90/edit#heading=h.izvlyqmhj6ll).
 This file as `.pdf` is included in filnal project assembly.

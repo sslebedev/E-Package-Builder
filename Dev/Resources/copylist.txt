@@ -1,0 +1,4 @@
+﻿Registries
+GameVersion.txt
+
+# WARNING! IT IS NOT REAL FILE!

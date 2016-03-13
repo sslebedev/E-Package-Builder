@@ -4,6 +4,12 @@
 
 E Package Builder is a package of applications automating piplene of preparing input project sources for sending them to the customer, including some checking and building executable packages.
 
+## Branching
+
+`master` is main work branch. `prototype` is a branch, where is placed result of prototype implementation. It is not planned to continue working on it, however it is possible.
+
+New branches are considered as "feature branches", requires pull requests and termination.
+
 ## Dcoumentation content
 
 Documentation text files are stored in 'Google Documents' because it is free document editor and documents are easy to access from everywhere. But other files are stored in `Doc` directory.

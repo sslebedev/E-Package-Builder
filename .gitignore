@@ -1,0 +1,9 @@
+# Ignore in any directory
+**/bin
+**/obj
+
+# Ignore ReSharper
+**/*_ReSharper*
+
+# Ignore .suo
+**/*.suo

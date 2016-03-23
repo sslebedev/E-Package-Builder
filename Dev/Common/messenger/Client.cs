@@ -34,6 +34,8 @@ namespace EPBMessanger
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(serverIP), port);
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.Connect(ipEndPoint);
+
+                _valid = true;
             } catch (System.Exception e) {
                 e.ToString();
                 return false;
@@ -49,8 +51,16 @@ namespace EPBMessanger
             }
 
             AsyncMessageReceiver.ReceiveAsync(_socket, null,
-               (param, msg) => { if (OnServerMsgReceived != null) OnServerMsgReceived(msg); },
-               (param) => { if (OnServerDisconnected != null) OnServerDisconnected(); });
+               (param, msg) => {
+                   if (OnServerMsgReceived != null)
+                       OnServerMsgReceived(msg);
+                   return _valid;
+               },
+               (param) => {
+                   if (OnServerDisconnected != null)
+                       OnServerDisconnected();
+                   _valid = false;
+               });
             return true;
         }
 

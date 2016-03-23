@@ -5,6 +5,12 @@ using System.Net.Sockets;
 
 namespace EPBMessanger
 {
+    public interface ISender
+    {
+        WritableMessage NewMessage();
+        void Disconnect();
+    }
+
     public class ReceivedMessage
     {
         private readonly string _msgName;
@@ -71,20 +77,20 @@ namespace EPBMessanger
 
     internal class AsyncMessageReceiver
     {
-        public delegate void MsgAction(object param, ReceivedMessage msg);
+        public delegate bool MsgHandler(object param, ReceivedMessage msg);
         public delegate void DisconnectedAction(object param);
 
         private readonly object _param;
         private readonly Socket _socket;
-        private readonly MsgAction _onMsg;
+        private readonly MsgHandler _onMsg;
         private readonly DisconnectedAction _onDisconnected;
 
-        public static void ReceiveAsync(Socket s, object param, MsgAction onMsg, DisconnectedAction onDisconnected)
+        public static void ReceiveAsync(Socket s, object param, MsgHandler onMsg, DisconnectedAction onDisconnected)
         {
             new AsyncMessageReceiver(s, param, onMsg, onDisconnected).RunAsync();
         }
 
-        private AsyncMessageReceiver(Socket s, object param, MsgAction onMsg, DisconnectedAction onDisconnected)
+        private AsyncMessageReceiver(Socket s, object param, MsgHandler onMsg, DisconnectedAction onDisconnected)
         {
             _param = param;
             _socket = s;
@@ -104,7 +110,12 @@ namespace EPBMessanger
                         break;
                     }
                     if (_onMsg != null) {
-                        _onMsg(_param, msg);
+                        if (!_onMsg(_param, msg)) {
+                            if (_onDisconnected != null) {
+                                _onDisconnected(_param);
+                            }
+                            break;
+                        }
                     }
                 }
             })).Start();

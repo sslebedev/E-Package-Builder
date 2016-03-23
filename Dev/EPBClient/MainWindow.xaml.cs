@@ -54,8 +54,7 @@ namespace EPBClient
         {
             WritableMessage msg = ClientStorage.Client.NewMessage();
             msg.WriteName("Text");
-            msg.Write(string.Format("Message {0}: {1}",
-               messageCount++, textMessage.Text));
+            msg.Write(String.Format("{0}", textMessage.Text));
             msg.Send();
         }
     }

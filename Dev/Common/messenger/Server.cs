@@ -18,10 +18,16 @@ namespace EPBMessanger
 
         #region Remote Client
 
-        public class RemoteClient
+        private class RemoteClient : ISender
         {
             private readonly Socket _socket;
             private bool _valid;
+
+            public bool IsValid
+            {
+                private set { _valid = value; }
+                get { return _valid; }
+            }
 
             public WritableMessage NewMessage()
             {
@@ -29,6 +35,14 @@ namespace EPBMessanger
                     return null;
                 }
                 return new WritableMessage(_socket);
+            }
+
+            public void Disconnect()
+            {
+                _valid = false;
+
+                _socket.Shutdown(SocketShutdown.Both);
+                _socket.Close();
             }
 
             internal RemoteClient(Socket s)
@@ -48,12 +62,13 @@ namespace EPBMessanger
             }
         }
 
-        public delegate void RemoteClientMsgAction(RemoteClient client, ReceivedMessage msg);
-        public event RemoteClientMsgAction OnCleintConnected;
-        public event RemoteClientMsgAction OnClientMsgReceived;
+        public delegate void ClientConnectionHandler(ReceivedMessage msg, ISender client, out object param);
+        public delegate void ClientDisconnectionHandler(object param);
+        public event ClientConnectionHandler OnCleintConnected;
+        public event ClientDisconnectionHandler OnClientDisconnected;
 
-        public delegate void RemoteClientAction(RemoteClient client);
-        public event RemoteClientAction OnClientDisconnected;
+        public delegate void ReceiveClientMsgAction(ReceivedMessage msg, ISender client, object param);
+        public event ReceiveClientMsgAction OnClientMsgReceived;
 
         #endregion
 
@@ -74,28 +89,38 @@ namespace EPBMessanger
                     continue;
                 }
 
+                object clientParam = null;
                 if (OnCleintConnected != null) {
-                    OnCleintConnected(client, connectionMsg);
+                    OnCleintConnected(connectionMsg, client, out clientParam);
                 }
 
-                AsyncMessageReceiver.ReceiveAsync(clientSocket, client, OnMsgReceived, OnClientDiconnected);
+                AsyncMessageReceiver.ReceiveAsync(
+                    clientSocket,
+                    System.Tuple.Create(client, clientParam),
+                    OnMsgReceived,
+                    OnClientDiconnected);
             }
         }
 
-        private void OnMsgReceived(object param, ReceivedMessage msg)
+        private bool OnMsgReceived(object param, ReceivedMessage msg)
         {
             lock (_msgReceivedLock) {
                 if (OnClientMsgReceived != null) {
-                    OnClientMsgReceived((RemoteClient)param, msg);
+                    var p = param as System.Tuple<RemoteClient, object>;
+                    OnClientMsgReceived(msg, p.Item1, p.Item2);
+                    return p.Item1.IsValid;
                 }
             }
+
+            return false;
         }
 
         private void OnClientDiconnected(object param)
         {
             lock (_disconnectedLock) {
                 if (OnClientDisconnected != null) {
-                    OnClientDisconnected((RemoteClient)param);
+                    var p = param as System.Tuple<RemoteClient, object>;
+                    OnClientDisconnected(p.Item2);
                 }
             }
         }

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<GameCheckTestResults xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" DateRan="2016-03-04T18:10:05.2306934+03:00">
+  <TestSuite Name="CompanyName.GameCheck.Tests.AssemblyProjectsValidation">
+    <Test Name="File Validation">
+      <Message Level="1" Type="Information">Running AssemblyProjects validation test.</Message>
+    </Test>
+  </TestSuite>
+  <TestSuite Name="CompanyName.GameCheck.Tests.BuildSystem">
+    <Test Name="build.cfg Checks" />
+    <Test Name="Folder Structure" />
+  </TestSuite>
+  <TestSuite Name="CompanyName.GameCheck.Tests.FileAndFolderValidation">
+    <Test Name="File Validation">
+      <Message Level="1" Type="Information">Running file validation test.</Message>
+      <Message Level="1" Type="Information">8451</Message>
+    </Test>
+    <Test Name="Folder Validation">
+      <Message Level="1" Type="Information">Running folder validation test.</Message>
+    </Test>
+  </TestSuite>
+  <TestSuite Name="CompanyName.GameCheck.Tests.Registries">
+    <Test Name="Bin Registry" />
+    <Test Name="Light Playlist" />
+    <Test Name="Check Decimal Places for Percentages in Payvars" />
+    <Test Name="Payvar to Paytable Mapping">
+      <Message Level="2" Type="Information">5 paytable mappings checked.</Message>
+    </Test>
+    <Test Name="Theme Name Length" />
+    <Test Name="Theme Registry G2S ID">
+      <Message Level="1" Type="Information">Valid G2S ID: Game020001SI9M01_123</Message>
+    </Test>
+    <Test Name="Theme Selection Menu Images">
+      <Message Level="1" Type="Information">Theme element "ThemeLogoKey" does not exist, but it is not required. (Culture: en-us)</Message>
+      <Message Level="1" Type="Information">Theme element "ThemePromoKey" does not exist, but it is not required. (Culture: en-us)</Message>
+      <Message Level="1" Type="Information">Theme element "ThemeLoadingDisplayKey" does not exist, but it is not required. (Culture: en-us)</Message>
+    </Test>
+    <Test Name="XSifInformation Registry" />
+  </TestSuite>
+  <TestSuite Name="CompanyName.GameCheck.Tests.ReleaseBuild">
+    <Test Name="Assembly Project Validation" />
+    <Test Name="Game Report Foundation Check" />
+    <Test Name="Game System Requirements" />
+    <Test Name="SDK Assets Folder Name" />
+    <Test Name="SDK Version Check">
+      <Message Level="2" Type="Information">Game is using 2.16.4 SDK.</Message>
+    </Test>
+    <Test Name="SIF Icon" />
+    <Test Name="Product Size" />
+    <Test Name="Ascent Next Target Build Test" />
+  </TestSuite>
+</GameCheckTestResults>

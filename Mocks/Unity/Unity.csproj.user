@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>-batchmode -nographics -quit -projectPath "C:\mockTemp" -executeMethod S3dCommandLineBuild.ReleaseGame -logFile "C:\mockTemp\BuildLog.txt"</StartArguments>
+  </PropertyGroup>
+</Project>

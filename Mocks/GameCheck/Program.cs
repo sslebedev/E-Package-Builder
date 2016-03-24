@@ -6,13 +6,16 @@ namespace GameCheck
 {
     class Program
     {
+        // Keys
+        #region Keys
+        
         struct KeyValues
         {
             public string grp;
             public string gsp;
             public string rf;
 
-            public bool Fullfilled
+            public bool IsValid
             {
                 get 
                 {
@@ -30,6 +33,7 @@ namespace GameCheck
             {}
         }
 
+        #endregion
 
         // Valid parameter set:
         // "-grp \"{0}\" -gsp \"{1}\" -rf \"{2}\""
@@ -65,7 +69,7 @@ namespace GameCheck
                 return;
             }
 
-            if (!values.Fullfilled) {
+            if (!values.IsValid) {
                 Console.WriteLine("Error: " + "Not enough keys");
                 return;
             }

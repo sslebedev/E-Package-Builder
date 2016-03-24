@@ -44,4 +44,6 @@ Any other param sets will be regected.
 
 Now first two params are considered always valid and are checked only to be not empty. Last parameter assign program's output `.xml` file.
 
+Binary output is `GameCheck.CLI.exe`. It can be changed to any `*GameCheck.CLI.exe` but any other name will be rejected by `E Package Builder` by design.
+
 When running it from visual studio in debug mode command line args assign path to `C:\mockTemp`.

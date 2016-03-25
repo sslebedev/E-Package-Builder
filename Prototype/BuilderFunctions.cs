@@ -231,9 +231,9 @@ namespace EPackageBuilder
             var linesOldGameVersion = File.ReadAllLines(pathGameVersion);
             var textNewGameVersion = FileSamples.GameVersionTxt;
 
-            var oldBuild = int.Parse(linesOldGameVersion[0].Substring(input.IndexOf(':') + 1));
-            var oldSdk = linesOldGameVersion[2].Substring(input.IndexOf(':') + 1).Trim();
-            var oldUnity = linesOldGameVersion[3].Substring(input.IndexOf(':') + 1).Trim();
+            var oldBuild = int.Parse(linesOldGameVersion[0].Substring(linesOldGameVersion[0].IndexOf(':') + 1));
+            var oldSdk = linesOldGameVersion[2].Substring(linesOldGameVersion[2].IndexOf(':') + 1).Trim();
+            var oldUnity = linesOldGameVersion[3].Substring(linesOldGameVersion[3].IndexOf(':') + 1).Trim();
 
             // 11/27/2015 - 18:04 (+03:00)
             var date = DateTime.Now.ToString("MM'/'dd'/'yyyy - HH:mm (zzz)");

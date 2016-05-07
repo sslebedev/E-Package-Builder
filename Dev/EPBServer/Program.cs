@@ -1,6 +1,7 @@
 ﻿using System;
 using EPBMessanger;
 using System.Threading;
+using System.Text;
 
 namespace EPBServer
 {
@@ -92,8 +93,13 @@ namespace EPBServer
             }
         }
 
+        static private Builder _builder = new Builder();
+
         static void Main(string[] args)
         {
+            if (!BuilderInit())
+                return;
+
             Server server = new Server();
             server.OnCleintConnected += OnClientConnected;
             server.OnClientMsgReceived += OnClientMsgReceived;
@@ -107,6 +113,28 @@ namespace EPBServer
                 ;
 
             t.Interrupt();
+        }
+
+        static private bool BuilderInit()
+        {
+            if (!_builder.Init())
+            {
+                Console.WriteLine("Builder initialization failed!");
+                return false;
+            }
+
+            StringBuilder sb = new StringBuilder("Builder initialization success!\nAvailable projects:\n");
+            for (int i = 0; i < _builder.Projects.Count; ++i)
+            {
+                sb.Append("    ");
+                sb.Append(i + 1);
+                sb.Append(". ");
+                sb.Append(_builder.Projects[i]);
+                sb.Append("\n");
+            }
+
+            Console.WriteLine(sb.ToString());
+            return true;
         }
     }
 }

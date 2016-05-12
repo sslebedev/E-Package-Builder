@@ -2,6 +2,7 @@
 using EPBMessanger;
 using System.Threading;
 using System.Text;
+using EPackageBuilder;
 
 namespace EPBServer
 {
@@ -26,6 +27,24 @@ namespace EPBServer
             private static int CreateClientUID()
             {
                 return _nextClientUID++;
+            }
+        }
+
+        private class ClientLogger : BuilderFunctions.ILogger
+        {
+            private readonly ISender _client;
+
+            public ClientLogger(ISender s)
+            {
+                _client = s;
+            }
+
+            public void WriteLogLine(String txt = "")
+            {
+                var msg = _client.NewMessage();
+                msg.WriteName("BuildLog");
+                msg.Write(txt);
+                msg.Send();
             }
         }
 
@@ -84,12 +103,39 @@ namespace EPBServer
             }
 
             if (msgName == "RequestBuild") {
-                // buildQueue.Push(...);
+                var args = message.Split();
+
+                switch (args[0])
+                {
+                    case "Sources":
+                        _builder.AddBuildRequest(clientParam.UID, new ClientLogger(client), args[1], Builder.BuildType.MakeSources);
+                        break;
+                    case "PC":
+                        _builder.AddBuildRequest(clientParam.UID, new ClientLogger(client), args[1], Builder.BuildType.BuildPC);
+                        break;
+                    case "Release":
+                        _builder.AddBuildRequest(clientParam.UID, new ClientLogger(client), args[1], Builder.BuildType.BuildRelease);
+                        break;
+                    case "Full":
+                        _builder.AddBuildRequest(clientParam.UID, new ClientLogger(client), args[1], Builder.BuildType.BuildFull);
+                        break;
+                }
             } else if (msgName == "UpdateQueueTable") {
                 // WritableMessage newMsg = client.NewMessage();
                 // write build queue state
-            } else if (msgName == "CheckoutConfigFile") {
-                // ...
+            } else if (msgName == "GetProjects") {
+                var clientMsg = client.NewMessage();
+                clientMsg.WriteName("Projects");
+
+                StringBuilder sb = new StringBuilder();
+                foreach (var proj in _builder.Projects)
+                {
+                    sb.Append(proj);
+                    sb.Append("\n");
+                }
+
+                clientMsg.Write(sb.ToString());
+                clientMsg.Send();
             }
         }
 
@@ -109,9 +155,7 @@ namespace EPBServer
             Thread t = new Thread(server.Start);
             t.Start();
 
-            while (Console.ReadLine() != "exit")
-                ;
-
+            _builder.Start();
             t.Interrupt();
         }
 

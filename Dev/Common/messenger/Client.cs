@@ -8,6 +8,7 @@ namespace EPBMessanger
     {
         private Socket _socket;
         private bool _valid;
+        private bool _connected;
 
         public event Action OnServerConnected;
         public event Action OnServerDisconnected;
@@ -18,6 +19,7 @@ namespace EPBMessanger
         public Client()
         {
             _valid = true;
+            _connected = false;
         }
 
         public WritableMessage NewMessage()
@@ -35,6 +37,7 @@ namespace EPBMessanger
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.Connect(ipEndPoint);
 
+                _connected = true;
                 _valid = true;
             } catch (System.Exception e) {
                 e.ToString();
@@ -59,6 +62,7 @@ namespace EPBMessanger
                (param) => {
                    if (OnServerDisconnected != null)
                        OnServerDisconnected();
+                   _connected = false;
                    _valid = false;
                });
             return true;
@@ -66,6 +70,9 @@ namespace EPBMessanger
 
         public void Disconnect()
         {
+            if (!_connected)
+                return;
+
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
 

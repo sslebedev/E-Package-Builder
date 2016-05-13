@@ -1,19 +1,63 @@
 ﻿<Window x:Class="EPBClient.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525" Icon="Resources/Icon1.ico" Background="{DynamicResource NonConnectedBrush}">
+        xmlns:local="clr-namespace:EPBClient"
+        Title="E-Package-Builder-Client" Height="382.8" Width="658.6" Icon="Resources/Icon1.ico">
+    
     <Window.Resources>
-        <SolidColorBrush x:Key="NonConnectedBrush" Color="#FFFF5D5D"/>
-        <SolidColorBrush x:Key="ConnectedBrush" Color="White"/>
     </Window.Resources>
-    <Grid  Name="mainGrid">
+    
+    <Grid  Name="mainGrid" Margin="0,0,0,4.8">
         <Menu HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="518">
             <MenuItem Header="Connection">
                 <MenuItem Header="Open" Click="MenuItem_Click_1"/>
                 <MenuItem Header="Close" Click="MenuItem_Click_2"/>
             </MenuItem>
+            <MenuItem Header="About">
+            </MenuItem>
         </Menu>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="31,51,0,0" TextWrapping="Wrap" Text="Some message" VerticalAlignment="Top" Width="120" Name="textMessage"/>
-        <Button Content="Send" HorizontalAlignment="Left" Margin="185,55,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
+        <DataGrid Name="ProjectsView" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,24,0,0" VerticalAlignment="Top" Height="305" Width="312" SelectionChanged="ProjectsView_SelectionChanged_1">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Height" Value="25"/>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Name}" Header="Configuration" Width="100"/>
+                <DataGridTemplateColumn Header="Src" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:BuildStatusEntity Status="{Binding SrcStatus}">
+                            </local:BuildStatusEntity>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Content="Some Button" HorizontalAlignment="Left" Margin="344,309,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_2"/>
+        <GroupBox Name="SelectedProjGroup" Header="Selected Proj" HorizontalAlignment="Left" Margin="344,19,0,0" VerticalAlignment="Top" Height="50" Width="99">
+            <Label Name="SelectedProjText" Content="" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="87" Margin="-1,0,0,0"/>
+        </GroupBox>
+        <GroupBox Name="SVNversionGroup" Header="SVN version" HorizontalAlignment="Left" Margin="344,93,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.037,-0.554" Height="50" Width="99">
+            <Label Name="SVNVersionText" Content="Latest" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="86" Margin="-1,-2,0,0"/>
+        </GroupBox>
+        <GroupBox Name="BuildGroup" Header="Build" HorizontalAlignment="Left" Margin="460,19,0,0" VerticalAlignment="Top" Height="124" Width="169">
+            <Grid HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="156">
+                <Button Name="ButtonPC" Content="PC" HorizontalAlignment="Left" Margin="10,28,0,0" VerticalAlignment="Top" Width="136" Click="ButtonPC_Click"/>
+                <Button Name="ButtonRelease" Content="Release" HorizontalAlignment="Left" Margin="10,52,0,0" VerticalAlignment="Top" Width="136" Click="ButtonRelease_Click"/>
+                <Button Name="ButtonSources" Content="Sources" HorizontalAlignment="Left" Margin="10,4,0,0" VerticalAlignment="Top" Width="136" Click="ButtonSources_Click"/>
+                <Button Name="ButtonFull" Content="Full" HorizontalAlignment="Left" Margin="10,76,0,0" VerticalAlignment="Top" Width="136" Click="ButtonFull_Click"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Log" HorizontalAlignment="Left" Margin="344,148,0,0" VerticalAlignment="Top" Height="146" Width="285">
+            <RichTextBox Name="TextLog" HorizontalAlignment="Left" Height="124" VerticalAlignment="Top" Width="272">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text=""/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </GroupBox>
+        <Button Name="ButtonCancel" Content="Cancel Build" HorizontalAlignment="Left" Margin="554,309,0,0" VerticalAlignment="Top" Width="75"/>
     </Grid>
 </Window>

@@ -18,8 +18,13 @@ namespace EPBClient
         {
             Int32 port;
             if (!Int32.TryParse(textPort.Text, out port) ||
-               !ClientStorage.Client.Connect(textServerIP.Text, port, "EPB2Client")) {
-                MessageBox.Show("Connection failed!");
+               !ClientStorage.Client.Connect(textServerIP.Text, port, "EPB2Client"))
+            {
+                MainWindow.Logger.WriteLog("Connection failed!");
+            }
+            else
+            {
+                MainWindow.Logger.WriteLog("Connection success!");
             }
 
             Hide();

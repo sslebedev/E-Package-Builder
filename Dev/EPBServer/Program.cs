@@ -137,7 +137,7 @@ namespace EPBServer
                 clientMsg.Write(sb.ToString());
                 clientMsg.Send();
             }
-            else if (msgName == "CheckOutConfigFile")
+            else if (msgName == "CheckOutConfigFile") // TODO SSL: include it in switch/case when merged
             {
                 var clientMsg = client.NewMessage();
                 clientMsg.WriteName("CheckOutConfigFile");

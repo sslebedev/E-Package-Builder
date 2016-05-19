@@ -1,0 +1,6 @@
+Build:###BUILD###
+Date:###DATE###
+SDK:###SDK###
+Unity:###UNITY###
+
+# WARNING! IT IS NOT REAL FILE!

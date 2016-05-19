@@ -1,4 +1,7 @@
-﻿using EPackageBuilder;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using EPackageBuilder;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,18 +19,18 @@ namespace EPBServer
             BuildOther
         };
 
-        private struct BuildRequest
+        private class BuildRequest
         {
-            public int OwnerUID;
+            public int OwnerUID; // TODO resharper warns it is unused, is it right?
             public string ProjectName;
             public BuilderFunctions.ILogger Logger;
             public BuildType Type;
         };
 
-        private readonly List<BuildRequest> buildQueue = new List<BuildRequest>();
+        private readonly BlockingCollection<BuildRequest> buildQueue
+            = new BlockingCollection<BuildRequest>(); // ConcurentQueue by default
 
-        private readonly object builderLock = new object();
-
+        
         private readonly List<string> projects = new List<string>();
         public List<string> Projects
         {
@@ -36,121 +39,140 @@ namespace EPBServer
 
         private string configDir;
 
-        public Builder()
+        public void Init()
         {
-        }
+            configDir = Environment.CurrentDirectory + @"\..\..\Configs"; // TODO WTF, refactor this. use working dir maybe, as I've done, see cda5db861dcc81dda2b37fbcd138d2dc699f4c11
+            var dir = new DirectoryInfo(configDir);
 
-        public bool Init()
-        {
-            configDir = Environment.CurrentDirectory + @"\..\..\Configs";
-            DirectoryInfo dir = new DirectoryInfo(configDir);
-
-            if (!dir.Exists)
-                return false;
-
-            FileInfo[] fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
-            foreach (FileInfo fi in fileInfos) {
-                string projectName = fi.Name.Remove(fi.Name.Length - 4);
-                projects.Add(projectName);
+            if (!dir.Exists) {
+                throw new FileNotFoundException(configDir);
             }
 
-            return true;
+            var fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
+            foreach (var fi in fileInfos) {
+                var projectName = fi.Name.Remove(fi.Name.Length - 4);
+                projects.Add(projectName);
+            }
         }
 
         public void AddBuildRequest(int clientUID, BuilderFunctions.ILogger logger, string projectName, BuildType type)
         {
-            BuildRequest request = new BuildRequest() {
+            var request = new BuildRequest {
                 OwnerUID = clientUID,
                 ProjectName = projectName,
                 Logger = logger,
                 Type = type
             };
 
-            EnqueueRequest(request);
-        }
-
-        private void EnqueueRequest(BuildRequest request)
-        {
-            lock (builderLock) {
-                buildQueue.Add(request);
-            }
-        }
-
-        private bool DequeueRequest(out BuildRequest request)
-        {
-            request = default(BuildRequest);
-
-            lock (builderLock) {
-                if (buildQueue.Count == 0)
-                    return false;
-
-                request = buildQueue[0];
-                buildQueue.RemoveAt(0);
-                return true;
-            }
+            buildQueue.Add(request);
         }
 
         public void Start()
         {
-            while (true) {
-                BuildRequest r;
-                while (true) {
-                    bool requestExists = DequeueRequest(out r);
-                    if (!requestExists) {
-                        System.Threading.Thread.Sleep(1000);
-                        continue;
-                    }
-                    if (r.ProjectName == _checkoutConfig) {
-                        EnqueueRequest(r);
-                        System.Threading.Thread.Sleep(1000);
-                        continue;
-                    }
-                    break;
+            while (!buildQueue.IsCompleted) {
+                BuildRequest request = null;
+                try {
+                    request = buildQueue.Take(); // Blocks
+                } catch (InvalidOperationException) {
+                    Debug.Assert(false, "Unreachible code");
                 }
 
-                Build(r);
+                if (request != null) {
+                    ProcessRequest(request);
+                }
+            }
+        }
+
+        private void ProcessRequest(BuildRequest request)
+        {
+            if (checkoutedConfig != null && request.ProjectName == checkoutedConfig) {
+                Task.Delay(10000).ContinueWith(_ => buildQueue.Add(request));
+                return;
+            }
+
+            Build(request);
+        }
+
+        private class Config
+        {
+            public string PathProject { get; private set; }
+            public string PathSources { get; private set; }
+            public string PathBuilds { get; private set; }
+            public string Description { get; private set; }
+            public string PathTemplates { get; private set; } // TODO add this path into your config. now it is placed in project root
+            public string GameCheckToolPath { get; private set; }
+            public string UnityPath { get; private set; }
+
+            public static Config Parse(string cfgFileName)
+            {
+                var cfgFile = new StreamReader(cfgFileName);
+
+                var instance = new Config {
+                    PathProject = cfgFile.ReadLine(),
+                    PathSources = cfgFile.ReadLine(),
+                    PathBuilds = cfgFile.ReadLine(),
+                    Description = cfgFile.ReadLine(),
+                    PathTemplates = cfgFile.ReadLine(),
+                    GameCheckToolPath = cfgFile.ReadLine(),
+                    UnityPath = cfgFile.ReadLine()
+                };
+
+                return instance;
             }
         }
 
         private void Build(BuildRequest r)
         {
-            var ctx = new BuilderFunctions.Context(
+            var config = Config.Parse(
                 String.Format("{0}\\{1}.cfg",
                 configDir,
                 r.ProjectName));
 
+            Action makeSources =
+                () => BuilderFunctions.MakeSources(config.PathTemplates,
+                                                   config.PathProject,
+                                                   config.PathSources,
+                                                   config.Description,
+                                                   config.GameCheckToolPath,
+                                                   r.Logger);
+            Action<string> processBuild =
+                buildType => BuilderFunctions.ProcessBuild(config.UnityPath,
+                                                           buildType,
+                                                           config.PathSources,
+                                                           config.PathBuilds,
+                                                           r.Logger);
             switch (r.Type) {
                 case BuildType.MakeSources:
-                    BuilderFunctions.MakeSources(ctx, r.Logger);
+                    makeSources();
                     break;
                 case BuildType.BuildPC:
-                    BuilderFunctions.ProcessBuild(ctx.UnityPath, BuilderFunctions.BuildTypes.Standalone, ctx.PathSources, ctx.PathBuilds, r.Logger);
+                    processBuild(BuilderFunctions.BuildTypes.Standalone);
                     break;
                 case BuildType.BuildRelease:
-                    BuilderFunctions.ProcessBuild(ctx.UnityPath, BuilderFunctions.BuildTypes.Release, ctx.PathSources, ctx.PathBuilds, r.Logger);
+                    processBuild(BuilderFunctions.BuildTypes.Release);
                     break;
                 case BuildType.BuildFull:
-                    BuilderFunctions.MakeSources(ctx, r.Logger);
-                    BuilderFunctions.ProcessBuild(ctx.UnityPath, BuilderFunctions.BuildTypes.Standalone, ctx.PathSources, ctx.PathBuilds, r.Logger);
-                    BuilderFunctions.ProcessBuild(ctx.UnityPath, BuilderFunctions.BuildTypes.Release, ctx.PathSources, ctx.PathBuilds, r.Logger);
+                    makeSources();
+                    processBuild(BuilderFunctions.BuildTypes.Standalone);
+                    processBuild(BuilderFunctions.BuildTypes.Release);
                     break;
                 case BuildType.BuildOther:
                     break;
             }
         }
 
-        private string _checkoutConfig = "";
+        private string checkoutedConfig;
 
         public string CheckoutConfig(string name)
         {
-            _checkoutConfig = name;
+            checkoutedConfig = name;
             return File.ReadAllText(configDir + "/" + name);
         }
 
         public void CheckinConfig(string file)
         {
-            File.WriteAllText(_checkoutConfig, file);
-            _checkoutConfig = "";
+            File.WriteAllText(checkoutedConfig, file);
+            checkoutedConfig = null;
         }
     }
 }

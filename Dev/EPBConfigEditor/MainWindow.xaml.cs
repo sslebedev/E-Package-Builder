@@ -13,20 +13,90 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using EPBMessanger;
+
 
 namespace epb
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
+    class ClientStorage
+    {
+        private static Client _client;
+        public static Client Client
+        {
+            private set { _client = value; }
+            get { return _client; }
+        }
+
+        public static void Init()
+        {
+            Client = new Client();
+        }
+    }
+
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
-            
-            string[] Projects = { "Project1", "Project2", "Project3", "Project4", "Project5" };
-            listBox1.ItemsSource = Projects;
+
+            ClientStorage.Init();
+            ClientStorage.Client.OnServerConnected += OnServerConnected;
+            ClientStorage.Client.OnServerDisconnected += OnServerDisconnected;
+            ClientStorage.Client.OnServerMsgReceived += OnServerMsgReceived;
+
+            /*ClientStorage.Client.Connect("127.0.0.1", 11000, "EPBConfigEditor");
+
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("GetProjects");
+            msg.Write("");
+            msg.Send();*/
+        }
+
+        private void OnServerMsgReceived(ReceivedMessage msg)
+        {
+            string msgNameFromServer = msg.ReadName();
+            if (msgNameFromServer == "Projects")
+            {
+                string[] projectsName = msg.Read().Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                MainWndAction(new Action(() => { listBox1.ItemsSource = projectsName; }));
+            }
+            else if (msgNameFromServer == "CheckOutConfigFile")
+            {
+                string[] FilePaths = msg.Read().Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                MainWndAction(new Action(() =>
+                {
+
+                    textBox1.Text = FilePaths[0];
+                    textBox2.Text = FilePaths[1];
+                    textBox3.Text = FilePaths[2];
+                    textBox4.Text = FilePaths[3];
+                    textBox5.Text = FilePaths[4];
+                }));
+            }
+        }
+
+        private void OnServerConnected()
+        {
+            //MessageBox.Show("Connected");
+
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("GetProjects");
+            msg.Write("");
+            msg.Send();
+        }
+
+        private void OnServerDisconnected()
+        {
+            Delegate onServerDisconnected = new Action(() => { });
+
+            Dispatcher.Invoke(onServerDisconnected, null);
+        }
+
+        private void MainWndAction(Delegate d)
+        {
+            Dispatcher.Invoke(d, null);
         }
 
         private void listBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -36,35 +106,21 @@ namespace epb
 
             label2.Content = selectedProject;
 
-            if (File.Exists(selectedProject + ".txt"))
-            {
-                string[] ProjectContent = File.ReadAllLines(selectedProject + ".txt");
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("CheckOutConfigFile");
+            msg.Write(selectedProject);
+            msg.Send();
 
-                textBox1.Text = ProjectContent[1];
-                textBox2.Text = ProjectContent[2];
-                textBox3.Text = ProjectContent[3];
-                textBox4.Text = ProjectContent[4];
-                textBox5.Text = ProjectContent[5];
-            }
-            else
-            {
-                textBox1.Text = "Nan";
-                textBox2.Text = "Nan";
-                textBox3.Text = "Nan";
-                textBox4.Text = "Nan";
-                textBox5.Text = "Nan";
-                MessageBox.Show("Config is empty");
-            }
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             label2.Content = "Config is not selected";
-            textBox1.Text = "Nan";
-            textBox2.Text = "Nan";
-            textBox3.Text = "Nan";
-            textBox4.Text = "Nan";
-            textBox5.Text = "Nan";
+            textBox1.Text = "NaN";
+            textBox2.Text = "NaN";
+            textBox3.Text = "NaN";
+            textBox4.Text = "NaN";
+            textBox5.Text = "NaN";
         }
 
         private void button2_Click(object sender, RoutedEventArgs e)
@@ -80,6 +136,17 @@ namespace epb
         private void textBox1_TextChanged(object sender, TextChangedEventArgs e)
         {
 
+        }
+
+        private void MenuItem_Click_1(object sender, RoutedEventArgs e)
+        {
+            OpenConnectionWindow w = new OpenConnectionWindow();
+            w.Show();
+        }
+
+        private void MenuItem_Click_2(object sender, RoutedEventArgs e)
+        {
+            ClientStorage.Client.Disconnect();
         }
 
 

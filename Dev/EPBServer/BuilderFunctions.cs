@@ -26,11 +26,12 @@ namespace EPackageBuilder
 
             static FileSamples()
             {
-                BuildCfg = File.ReadAllText("BuildCfg.cfg"); //Properties.Resources.build;
-                GameFullBat = ""; //Properties.Resources.GameFULL;
-                GameShortBat = ""; //Properties.Resources.GameSHORT;
-                CopyListTxt = ""; // Properties.Resources.copylist;
-                GameVersionTxt = ""; // Properties.Resources.GameVersion;
+                // TODO remember to write about server reboot in admin manual
+                BuildCfg = File.ReadAllText("BuilderTemplates/build.cfg");
+                GameFullBat = File.ReadAllText("BuilderTemplates/GameFULL.bat");
+                GameShortBat = File.ReadAllText("BuilderTemplates/GameSHORT.bat");
+                CopyListTxt = File.ReadAllText("BuilderTemplates/copylist.txt");
+                GameVersionTxt = File.ReadAllText("BuilderTemplates/GameVersion.txt");
             }
         }
 

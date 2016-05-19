@@ -1,9 +1,7 @@
 ﻿using EPackageBuilder;
-using EPBMessanger;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows;
 
 namespace EPBServer
 {
@@ -26,17 +24,17 @@ namespace EPBServer
             public BuildType Type;
         };
 
-        private readonly List<BuildRequest> _buildQueue = new List<BuildRequest>();
+        private readonly List<BuildRequest> buildQueue = new List<BuildRequest>();
 
-        private readonly object _builderLock = new object();
+        private readonly object builderLock = new object();
 
-        private readonly List<string> _projects = new List<string>();
+        private readonly List<string> projects = new List<string>();
         public List<string> Projects
         {
-            get { return _projects; }
+            get { return projects; }
         }
 
-        private string _configDir;
+        private string configDir;
 
         public Builder()
         {
@@ -44,17 +42,16 @@ namespace EPBServer
 
         public bool Init()
         {
-            _configDir = Environment.CurrentDirectory + @"\..\..\Configs";
-            DirectoryInfo dir = new DirectoryInfo(_configDir);
+            configDir = Environment.CurrentDirectory + @"\..\..\Configs";
+            DirectoryInfo dir = new DirectoryInfo(configDir);
 
             if (!dir.Exists)
                 return false;
 
             FileInfo[] fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
-            foreach (FileInfo fi in fileInfos)
-            {
+            foreach (FileInfo fi in fileInfos) {
                 string projectName = fi.Name.Remove(fi.Name.Length - 4);
-                _projects.Add(projectName);
+                projects.Add(projectName);
             }
 
             return true;
@@ -74,8 +71,8 @@ namespace EPBServer
 
         private void EnqueueRequest(BuildRequest request)
         {
-            lock (_builderLock) {
-                _buildQueue.Add(request);
+            lock (builderLock) {
+                buildQueue.Add(request);
             }
         }
 
@@ -83,31 +80,27 @@ namespace EPBServer
         {
             request = default(BuildRequest);
 
-            lock (_builderLock) {
-                if (_buildQueue.Count == 0)
+            lock (builderLock) {
+                if (buildQueue.Count == 0)
                     return false;
 
-                request = _buildQueue[0];
-                _buildQueue.RemoveAt(0);
+                request = buildQueue[0];
+                buildQueue.RemoveAt(0);
                 return true;
             }
         }
 
         public void Start()
         {
-            while (true)
-            {
+            while (true) {
                 BuildRequest r;
-                while (true)
-                {
+                while (true) {
                     bool requestExists = DequeueRequest(out r);
-                    if (!requestExists)
-                    {
+                    if (!requestExists) {
                         System.Threading.Thread.Sleep(1000);
                         continue;
                     }
-                    if (r.ProjectName == _checkoutConfig)
-                    {
+                    if (r.ProjectName == _checkoutConfig) {
                         EnqueueRequest(r);
                         System.Threading.Thread.Sleep(1000);
                         continue;
@@ -121,11 +114,12 @@ namespace EPBServer
 
         private void Build(BuildRequest r)
         {
-            BuilderFunctions.Context ctx =
-                new BuilderFunctions.Context(String.Format("{0}\\{1}.cfg", _configDir, r.ProjectName));
+            var ctx = new BuilderFunctions.Context(
+                String.Format("{0}\\{1}.cfg",
+                configDir,
+                r.ProjectName));
 
-            switch (r.Type)
-            {
+            switch (r.Type) {
                 case BuildType.MakeSources:
                     BuilderFunctions.MakeSources(ctx, r.Logger);
                     break;
@@ -150,7 +144,7 @@ namespace EPBServer
         public string CheckoutConfig(string name)
         {
             _checkoutConfig = name;
-            return File.ReadAllText(_configDir + "/" + name);
+            return File.ReadAllText(configDir + "/" + name);
         }
 
         public void CheckinConfig(string file)

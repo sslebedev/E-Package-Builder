@@ -3,6 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
+        <Menu HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="518">
+            <MenuItem Header="Connection">
+                <MenuItem Header="Open" Click="MenuItem_Click_1"/>
+                <MenuItem Header="Close" Click="MenuItem_Click_2"/>
+            </MenuItem>
+            <MenuItem Header="About">
+            </MenuItem>
+        </Menu>
         <ListBox HorizontalAlignment="Left" Margin="24,58,0,74" Name="listBox1" Width="149" SelectionChanged="listBox1_SelectionChanged" />
         <Label Content="Config is not selected" Height="28" HorizontalAlignment="Right" Margin="0,34,107,0" Name="label2" VerticalAlignment="Top" Width="167" />
         <Button Content="Cancel" Height="23" HorizontalAlignment="Left" Margin="229,256,0,0" Name="button1" VerticalAlignment="Top" Width="75" Click="button1_Click" />

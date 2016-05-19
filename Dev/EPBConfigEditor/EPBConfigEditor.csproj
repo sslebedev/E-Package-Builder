@@ -65,8 +65,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="OpenConnectionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="OpenConnectionWindow.xaml.cs">
+      <DependentUpon>OpenConnectionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -92,6 +99,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\messenger\messenger.csproj">
+      <Project>{956dfd65-a4e7-4f64-b517-e057bd681537}</Project>
+      <Name>messenger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EPBClient\EPBClient.csproj">
+      <Project>{d04d93c3-629f-47db-9281-ba601c2a108b}</Project>
+      <Name>EPBClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EPBServer\EPBServer.csproj">
+      <Project>{ee990aa6-3c39-41aa-915f-dccc916bda77}</Project>
+      <Name>EPBServer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

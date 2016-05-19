@@ -48,8 +48,10 @@ namespace EPBServer
             DirectoryInfo dir = new DirectoryInfo(_configDir);
 
             if (!dir.Exists)
+            {
+                Console.WriteLine("Configs directory not found");
                 return false;
-
+            }
             FileInfo[] fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
             foreach (FileInfo fi in fileInfos)
             {
@@ -149,8 +151,8 @@ namespace EPBServer
 
         public string CheckoutConfig(string name)
         {
-            _checkoutConfig = name;
-            return File.ReadAllText(_configDir + "/" + name);
+            _checkoutConfig = _configDir + "/" + name + ".cfg";
+            return File.ReadAllText(_checkoutConfig);
         }
 
         public void CheckinConfig(string file)

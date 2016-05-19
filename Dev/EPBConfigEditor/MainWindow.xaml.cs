@@ -116,11 +116,11 @@ namespace epb
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             label2.Content = "Config is not selected";
-            textBox1.Text = "NaN";
-            textBox2.Text = "NaN";
-            textBox3.Text = "NaN";
-            textBox4.Text = "NaN";
-            textBox5.Text = "NaN";
+            textBox1.Text = "Nil";
+            textBox2.Text = "Nil";
+            textBox3.Text = "Nil";
+            textBox4.Text = "Nil";
+            textBox5.Text = "Nil";
         }
 
         private void button2_Click(object sender, RoutedEventArgs e)

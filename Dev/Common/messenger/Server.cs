@@ -1,61 +1,54 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
 
 namespace EPBMessanger
 {
     public class Server
     {
-        private readonly Socket _serverSocket;
+        private readonly Socket serverSocket;
 
         public Server(int port = 11000, int backlog = 100)
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, port);
-            _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            var ipEndPoint = new IPEndPoint(IPAddress.Any, port);
+            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            _serverSocket.Bind(ipEndPoint);
-            _serverSocket.Listen(backlog);
+            serverSocket.Bind(ipEndPoint);
+            serverSocket.Listen(backlog);
         }
 
         #region Remote Client
 
         private class RemoteClient : ISender
         {
-            private readonly Socket _socket;
-            private bool _valid;
-
-            public bool IsValid
-            {
-                private set { _valid = value; }
-                get { return _valid; }
-            }
+            private readonly Socket socket;
+            
+            public bool IsValid { private set; get; }
 
             public WritableMessage NewMessage()
             {
-                if (!_valid) {
-                    return null;
-                }
-                return new WritableMessage(_socket);
+                return IsValid ? new WritableMessage(socket) : null;
             }
 
             public void Disconnect()
             {
-                _valid = false;
+                IsValid = false;
 
-                _socket.Shutdown(SocketShutdown.Both);
-                _socket.Close();
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
             }
 
             internal RemoteClient(Socket s)
             {
-                _socket = s;
-                _valid = true;
+                socket = s;
+                IsValid = true;
             }
 
             internal ReceivedMessage ReceiveMessage()
             {
-                ReceivedMessage msg = ReceivedMessage.New(_socket);
+                var msg = ReceivedMessage.New(socket);
                 if (msg == null) {
-                    _valid = false;
+                    IsValid = false;
                     return null;
                 }
                 return msg;
@@ -74,15 +67,15 @@ namespace EPBMessanger
 
         #region Start Server
 
-        private readonly object _msgReceivedLock = new object();
-        private readonly object _disconnectedLock = new object();
+        private readonly object msgReceivedLock = new object();
+        private readonly object disconnectedLock = new object();
 
         public void Start()
         {
             while (true) {
-                Socket clientSocket = _serverSocket.Accept();
-                RemoteClient client = new RemoteClient(clientSocket);
-                ReceivedMessage connectionMsg = client.ReceiveMessage();
+                var clientSocket = serverSocket.Accept();
+                var client = new RemoteClient(clientSocket);
+                var connectionMsg = client.ReceiveMessage();
 
                 if (connectionMsg == null) {
                     // client disconnected
@@ -90,8 +83,9 @@ namespace EPBMessanger
                 }
 
                 object clientParam = null;
-                if (OnCleintConnected != null) {
-                    OnCleintConnected(connectionMsg, client, out clientParam);
+                var evt = OnCleintConnected;  // Sic!
+                if (evt != null) {
+                    evt(connectionMsg, client, out clientParam);
                 }
 
                 AsyncMessageReceiver.ReceiveAsync(
@@ -104,10 +98,12 @@ namespace EPBMessanger
 
         private bool OnMsgReceived(object param, ReceivedMessage msg)
         {
-            lock (_msgReceivedLock) {
-                if (OnClientMsgReceived != null) {
+            lock (msgReceivedLock) {
+                var evt = OnClientMsgReceived;  // Sic!
+                if (evt != null) {
                     var p = param as System.Tuple<RemoteClient, object>;
-                    OnClientMsgReceived(msg, p.Item1, p.Item2);
+                    Debug.Assert(p != null, "p != null");
+                    evt(msg, p.Item1, p.Item2);
                     return p.Item1.IsValid;
                 }
             }
@@ -117,11 +113,15 @@ namespace EPBMessanger
 
         private void OnClientDiconnected(object param)
         {
-            lock (_disconnectedLock) {
-                if (OnClientDisconnected != null) {
-                    var p = param as System.Tuple<RemoteClient, object>;
-                    OnClientDisconnected(p.Item2);
+            lock (disconnectedLock) {
+                var evt = OnClientDisconnected; // Sic!
+                if (evt == null) {
+                    return;
                 }
+
+                var p = param as System.Tuple<RemoteClient, object>;
+                Debug.Assert(p != null, "p != null");
+                evt(p.Item2);
             }
         }
 

@@ -52,12 +52,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="BuilderTemplates\build.cfg" />
+    <None Include="BuilderTemplates\GameFULL.bat" />
+    <None Include="BuilderTemplates\GameSHORT.bat" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\messenger\messenger.csproj">
       <Project>{956dfd65-a4e7-4f64-b517-e057bd681537}</Project>
       <Name>EPBMessanger</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="BuilderTemplates\copylist.txt" />
+    <Content Include="BuilderTemplates\GameVersion.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

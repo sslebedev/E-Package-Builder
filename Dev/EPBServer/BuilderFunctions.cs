@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Windows;
 using System.Xml.Linq;
 
 namespace EPackageBuilder
@@ -13,64 +11,25 @@ namespace EPackageBuilder
     {
         public class FunctionFailedExeption : Exception
         {
-            public FunctionFailedExeption(string message) : base(message) {}
-        }
-        
-        static class FileSamples
-        {
-            public static readonly string BuildCfg;
-            public static readonly string GameFullBat;
-            public static readonly string GameShortBat;
-            public static readonly string CopyListTxt;
-            public static readonly string GameVersionTxt;
-
-            static FileSamples()
-            {
-                BuildCfg = File.ReadAllText("BuildCfg.cfg"); //Properties.Resources.build;
-                GameFullBat = ""; //Properties.Resources.GameFULL;
-                GameShortBat = ""; //Properties.Resources.GameSHORT;
-                CopyListTxt = ""; // Properties.Resources.copylist;
-                GameVersionTxt = ""; // Properties.Resources.GameVersion;
-            }
+            public FunctionFailedExeption(string message) : base(message) { }
         }
 
-        public class Context
+        private class FileSamples
         {
-            public string PathProject { get; private set; }
-            public string PathSources { get; private set; }
-            public string PathBuilds { get; private set; }
-            public string Description { get; private set; }
-            public bool NeedOpenExplorer { get; set; }
-            public string GameCheckToolPath { get; private set; }
-            public string UnityPath { get; private set; }
+            public readonly string BuildCfg;
+            public readonly string GameFullBat;
+            public readonly string GameShortBat;
+            public readonly string CopyListTxt;
+            public readonly string GameVersionTxt;
 
-            public Context(string pathSources, string pathProject, string pathBuilds, string description, bool needOpenExplorer, string gameCheckTool, string unityPath)
+            public FileSamples(string pathTemplates)
             {
-                PathProject = pathProject;
-                PathSources = pathSources;
-                PathBuilds = pathBuilds;
-                Description = description;
-                NeedOpenExplorer = needOpenExplorer;
-                GameCheckToolPath = gameCheckTool;
-                UnityPath = unityPath;
+                BuildCfg = File.ReadAllText(Path.Combine(pathTemplates, "build.cfg"));
+                GameFullBat = File.ReadAllText(Path.Combine(pathTemplates, "GameFULL.bat"));
+                GameShortBat = File.ReadAllText(Path.Combine(pathTemplates, "GameSHORT.bat"));
+                CopyListTxt = File.ReadAllText(Path.Combine(pathTemplates, "copylist.txt"));
+                GameVersionTxt = File.ReadAllText(Path.Combine(pathTemplates, "GameVersion.txt"));
             }
-
-            public Context(string cfgFileName)
-            {
-                StreamReader cfgFile = new StreamReader(cfgFileName);
-                PathProject         = cfgFile.ReadLine();
-                PathSources         = cfgFile.ReadLine();
-                PathBuilds          = cfgFile.ReadLine();
-                Description         = cfgFile.ReadLine();
-                GameCheckToolPath   = cfgFile.ReadLine();
-                UnityPath           = cfgFile.ReadLine();
-
-                NeedOpenExplorer = false;
-            }
-
-            public Context(string pathSources, bool needOpenExplorer)
-                : this(pathSources, null, null, null, needOpenExplorer, string.Empty, null)
-            { }
         }
 
         public interface ILogger
@@ -78,10 +37,18 @@ namespace EPackageBuilder
             void WriteLogLine(String txt = "");
         }
 
-        public static void MakeSources(Context context, ILogger logger)
+        public static void MakeSources(
+            string pathTemplates,
+            string pathProject,
+            string pathSources,
+            string description,
+            string gameCheckToolPath,
+            ILogger logger)
         {
-            var pathRootPrj = context.PathProject;
-            var pathRootSrc = context.PathSources;
+            var fileSamples = new FileSamples(pathTemplates);
+
+            var pathRootPrj = pathProject;
+            var pathRootSrc = pathSources;
 
             logger.WriteLogLine(DateTime.Now + " | Making sources");
             logger.WriteLogLine("Source directory: " + pathRootPrj);
@@ -99,7 +66,7 @@ namespace EPackageBuilder
 
             // Reading game info
             logger.WriteLogLine("Reading game info...");
-            var gameInfo = ParseGameInfo(pathRootPrj, context.Description);
+            var gameInfo = ParseGameInfo(pathRootPrj, description);
 
             // Making folders
             logger.WriteLogLine("Creating structure...");
@@ -114,7 +81,7 @@ namespace EPackageBuilder
 
             const string nameBuildCfg = "build.cfg";
             logger.WriteLogLine(nameBuildCfg);
-            var textBuildCfg = FileSamples.BuildCfg;
+            var textBuildCfg = fileSamples.BuildCfg;
             textBuildCfg = textBuildCfg.Replace("###SHORTNAME###", gameInfo.ShortName);
             textBuildCfg = textBuildCfg.Replace("###REVISION###", gameInfo.Revision);
             textBuildCfg = textBuildCfg.Replace("###FAMILY###", gameInfo.Family);
@@ -123,19 +90,19 @@ namespace EPackageBuilder
 
             var nameGameFullBat = "Game" + gameInfo.FullName + ".bat";
             logger.WriteLogLine(nameGameFullBat);
-            var textGameFullBat = FileSamples.GameFullBat;
+            var textGameFullBat = fileSamples.GameFullBat;
             File.WriteAllText(Path.Combine(pathRootSrc, nameGameFullBat), textGameFullBat);
 
             var nameGameShortBat = "Game" + gameInfo.ShortName + ".bat";
             logger.WriteLogLine(nameGameShortBat);
-            var textGameShortBat = FileSamples.GameShortBat;
+            var textGameShortBat = fileSamples.GameShortBat;
             textGameShortBat = textGameShortBat.Replace("###FULLNAME###", gameInfo.FullName);
             textGameShortBat = textGameShortBat.Replace("###SHORTNAME###", gameInfo.ShortName);
             File.WriteAllText(Path.Combine(pathGame, nameGameShortBat), textGameShortBat);
 
             // Copy files and folders from source to dst using copylist
             logger.WriteLogLine("Copy sources...");
-            var copylist = GetCopyList();
+            var copylist = ParceCopyList(fileSamples.CopyListTxt);
             foreach (var s in copylist) {
                 var src = Path.Combine(pathRootPrj, s);
                 var dst = Path.Combine(pathGame, s);
@@ -167,11 +134,11 @@ namespace EPackageBuilder
             Helpers.AscendCleanup(pathGame);
 
             // Writing game version
-            WriteGameVersion(context.PathProject, logger);
+            WriteGameVersion(pathProject, logger);
 
             // Game check
             try {
-                var gameCheckResult = ProcessGameCheck(context.GameCheckToolPath, context.PathSources);
+                var gameCheckResult = ProcessGameCheck(gameCheckToolPath, pathSources);
                 logger.WriteLogLine(gameCheckResult);
                 logger.WriteLogLine();
             } catch (FunctionFailedExeption exeption) {
@@ -179,18 +146,11 @@ namespace EPackageBuilder
             }
             // Message completed
             logger.WriteLogLine("Completed.");
-
-            // Open Explorer
-            if (context.NeedOpenExplorer) {
-                Process.Start(pathRootSrc);
-            }
         }
 
-        private static IEnumerable<String> GetCopyList()
+        private static IEnumerable<String> ParceCopyList(string copyList)
         {
-            /*const string fileName = "copylist.txt";
-            var res = File.ReadAllLines(fileName).Select(l => l.Trim()).Where(l => l.Length > 0);*/
-            var res = FileSamples.CopyListTxt.Split(Environment.NewLine.ToCharArray()).Select(l => l.Trim()).Where(l => l.Length > 0 && !l.StartsWith(@"#"));
+            var res = copyList.Split(Environment.NewLine.ToCharArray()).Select(l => l.Trim()).Where(l => l.Length > 0 && !l.StartsWith(@"#"));
             return res;
         }
 
@@ -238,13 +198,13 @@ namespace EPackageBuilder
             return gameInfo;
         }
 
-        public static void MakeGameVersion(string pathProject, ILogger logger, bool increase)
+        public static void MakeGameVersion(string pathProject, string templateGameVersion, ILogger logger, bool increase)
         {
             const string nameGameVersion = "GameVersion.txt";
             var pathGameVersion = Path.Combine(pathProject, nameGameVersion);
 
             var linesOldGameVersion = File.ReadAllLines(pathGameVersion);
-            var textNewGameVersion = FileSamples.GameVersionTxt;
+            var textNewGameVersion = templateGameVersion;
 
             var oldBuild = int.Parse(linesOldGameVersion[0].Substring(linesOldGameVersion[0].IndexOf(':') + 1));
             var oldSdk = linesOldGameVersion[2].Substring(linesOldGameVersion[2].IndexOf(':') + 1).Trim();
@@ -269,22 +229,23 @@ namespace EPackageBuilder
             if (gameCheckTool.Length == 0) {
                 throw new FunctionFailedExeption("Error: GameCheck path is not set, cannot be performed");
             }
-            
+
             //var checkResult = Application.LocalUserAppDataPath + "\\gameCheckResult.xml";
             var checkResult = pathRelease + "\\gameCheckResult.xml";
 
             var pathProjects = Path.Combine(pathRelease, "projects");
             var srcInfo = new DirectoryInfo(pathProjects);
-            var gsp = srcInfo.GetDirectories().FirstOrDefault(d => d.Name.StartsWith("Game")).FullName;
+            var directoryInfo = srcInfo.GetDirectories().FirstOrDefault(d => d.Name.StartsWith("Game"));
+            Debug.Assert(directoryInfo != null, "directoryInfo != null");
+            var gsp = directoryInfo.FullName;
             var param = string.Format(gameCheckArgs, pathRelease, gsp, checkResult);
-            var pInfo = new ProcessStartInfo(gameCheckTool, param)
-                        {RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true};
+            var pInfo = new ProcessStartInfo(gameCheckTool, param) { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true };
             var p = Process.Start(pInfo);
-            
+
             p.BeginOutputReadLine();
             p.OutputDataReceived += OnProcessOutputDataReceived;
             p.WaitForExit();
-            
+
             return ParseGameCheckResult(checkResult);
         }
 
@@ -292,7 +253,11 @@ namespace EPackageBuilder
         {
             var xDoc = XDocument.Load(result, LoadOptions.SetLineInfo);
 
-            return "GameCheck results:\r\n" + xDoc.Root.Elements().SelectMany(x => x.Elements().SelectMany(y => y.Elements())).Select(x => x.Value).Aggregate((x, y) => x + "\r\n" + y);
+            Debug.Assert(xDoc.Root != null, "xDoc.Root != null");
+            return "GameCheck results:\r\n"
+                + xDoc.Root.Elements()
+                .SelectMany(x => x.Elements().SelectMany(y => y.Elements()))
+                .Select(x => x.Value).Aggregate((x, y) => x + "\r\n" + y);
         }
 
         private static void OnProcessOutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -307,17 +272,17 @@ namespace EPackageBuilder
             public const string Standalone = "Standalone";
             public const string Release = "Release";
         }
-        
+
         public static void ProcessBuild(string unity, string buildType, string pathSources, string pathBuild, ILogger logger)
         {
             const string formatUnityArgs = "-batchmode -nographics -quit -projectPath \"{0}\" -executeMethod {1} -logFile \"{2}\"";
             const string formatCommand = "S3dCommandLineBuild.{0}Game";
-            
+
             //var logFile = Application.LocalUserAppDataPath + "\\BuildLog.txt";
             var logFile = pathBuild + "\\BuildLog.txt";
 
             logger.WriteLogLine("Making " + buildType + " build...");
-            
+
             if (unity.Length == 0) {
                 throw new FunctionFailedExeption("Error: Unity path is not set, cannot be performed");
             }
@@ -332,7 +297,7 @@ namespace EPackageBuilder
 
             // Calculate output directory
             var command = String.Format(formatCommand, buildType);
-            var unityArgs = string.Format(formatUnityArgs, pathSources, command, logFile); 
+            var unityArgs = string.Format(formatUnityArgs, pathSources, command, logFile);
             var pathUnityOutput = Path.Combine(Path.Combine(pathSources, "Builds"), buildType);
 
             // Reallocate output directory
@@ -360,7 +325,7 @@ namespace EPackageBuilder
             Helpers.DirectoryCopy(pathUnityOutput, pathBuild);
             logger.WriteLogLine("Cleaning temporaries...");
             Helpers.DeleteDirectory(Path.Combine(pathSources, "Builds"));
-            
+
             logger.WriteLogLine("Completed.");
         }
     }

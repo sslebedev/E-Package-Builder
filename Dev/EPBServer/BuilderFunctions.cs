@@ -328,5 +328,42 @@ namespace EPackageBuilder
 
             logger.WriteLogLine("Completed.");
         }
+
+        public static void SvnCheckout(string svnClient,
+                                       string urlRepo,
+                                       string pathSources,
+                                       ILogger logger,
+                                       string revision = "HEAD")
+        {
+            logger.WriteLogLine("Svn Update...");
+            const string formatSvnCheckout = "co -r\"{0}\" \"{1}\" \"{2}\" --force";
+            var svnCheckoutArgs = String.Format(formatSvnCheckout, revision, urlRepo, pathSources);
+            var pInfo = new ProcessStartInfo(svnClient, svnCheckoutArgs) {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var p = Process.Start(pInfo);
+            p.WaitForExit();
+        }
+
+        public static void SvnCommitFile(string svnClient,
+                                         string pathFile,
+                                         string message,
+                                         ILogger logger)
+        {
+            logger.WriteLogLine("Svn Update...");
+            const string formatSvnCommit = "ci -f\"{0}\" -m\"{1}\"";
+            var svnCommitArgs = String.Format(formatSvnCommit, pathFile, message);
+            var pInfo = new ProcessStartInfo(svnClient, svnCommitArgs) {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var p = Process.Start(pInfo);
+            p.WaitForExit();
+        }
+    }
+
     }
 }

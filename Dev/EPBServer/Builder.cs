@@ -5,6 +5,7 @@ using EPackageBuilder;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace EPBServer
 {
@@ -30,7 +31,7 @@ namespace EPBServer
         private readonly BlockingCollection<BuildRequest> buildQueue
             = new BlockingCollection<BuildRequest>(); // ConcurentQueue by default
 
-        
+
         private readonly List<string> projects = new List<string>();
         public List<string> Projects
         {
@@ -50,10 +51,10 @@ namespace EPBServer
 
             var fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
             foreach (var fi in fileInfos) {
+                // get file name without extension
                 var projectName = fi.Name.Remove(fi.Name.Length - 4); // TODO comment it
                 projects.Add(projectName);
             }
-            return true;
         }
 
         public void AddBuildRequest(int clientUID, BuilderFunctions.ILogger logger, string projectName, BuildType type)
@@ -166,8 +167,8 @@ namespace EPBServer
 
         public string CheckoutConfig(string name)
         {
-            checkoutConfig = configDir + "/" + name + ".cfg";
-            return File.ReadAllText(checkoutConfig);
+            checkoutedConfig = configDir + "/" + name + ".cfg";
+            return File.ReadAllText(checkoutedConfig);
         }
 
         public void CheckinConfig(string file)

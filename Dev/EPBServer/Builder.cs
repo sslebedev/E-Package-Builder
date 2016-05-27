@@ -52,7 +52,7 @@ namespace EPBServer
             var fileInfos = dir.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
             foreach (var fi in fileInfos) {
                 // get file name without extension
-                var projectName = fi.Name.Remove(fi.Name.Length - 4); // TODO comment it
+                var projectName = fi.Name.Remove(fi.Name.Length - 4); // TODO refactor this. http://lmgtfy.com/?q=c%23+get+filename+with+extension
                 projects.Add(projectName);
             }
         }

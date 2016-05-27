@@ -144,15 +144,15 @@ namespace EPBServer
                     clientMsg.Send();
                     }
                     break;
+                case "CheckOutConfigFile": {
+                    var clientMsg = client.NewMessage();
+                    clientMsg.WriteName("CheckOutConfigFile");
+                    clientMsg.Write(Builder.CheckoutConfig(message));
+                    clientMsg.Send();
+                    }
+                    break;
                 default:
                     throw new Exception("Unknown request"); // TODO Handle it
-            }
-            else if (msgName == "CheckOutConfigFile") // TODO SSL: include it in switch/case when merged
-            {
-                var clientMsg = client.NewMessage();
-                clientMsg.WriteName("CheckOutConfigFile");
-                clientMsg.Write(_builder.CheckoutConfig(message));
-                clientMsg.Send();
             }
         }
 
@@ -186,7 +186,7 @@ namespace EPBServer
                 // Start tasks
                 Task.Run(() => Server.Start());
                 Task.Run(() => Builder.Start());
-                Thread.Sleep(0);
+                Thread.Sleep(Timeout.Infinite);
             } catch(FileNotFoundException exception) {
                 Console.WriteLine(exception.Message);
             }

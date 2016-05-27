@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Documents;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace EPBClient
 {
@@ -130,8 +131,15 @@ namespace EPBClient
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            _projects[0].SetStatus(new Status());
+            _projects[0].SrcStatus = new Status(BuildStatus.Ready);
+            _projects[0].IsSelected = true;
         }
+
+        private void Row_MouseLeave(object sender, MouseEventArgs args)
+        {
+
+        }
+
 
         private void ProjectsView_SelectionChanged_1(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
@@ -209,10 +217,10 @@ namespace EPBClient
 
     public struct Status
     {
-        public int queuePos;
+        public string queuePos;
         public BuildStatus status;
 
-        public Status(BuildStatus status = BuildStatus.Failed, int pos = -1)
+        public Status(BuildStatus status = BuildStatus.Failed, string pos = "")
         {
             this.status = status;
             this.queuePos = pos;
@@ -224,12 +232,19 @@ namespace EPBClient
         public ProjectsEntity(string name)
         {
             _name = name;
-            SetStatus(new Status(BuildStatus.Ready, 2));
+            SrcStatus = new Status(BuildStatus.Building, "1");
+            SrcToolTip = "Version #Latest\nYour Task\nIn Progress";
         }
 
-        public void SetStatus(Status s)
+        private bool _isSelected;
+        public bool IsSelected
         {
-            SrcStatus = s;
+            get { return _isSelected; }
+            set
+            {
+                _isSelected = value;
+                RaisePropertyChanged("IsSelected");
+            }
         }
 
         private readonly string _name;
@@ -249,6 +264,18 @@ namespace EPBClient
             }
         }
 
+        private string _srcToolTip;
+        public string SrcToolTip
+        {
+            get { return _srcToolTip; }
+            set
+            {
+                _srcToolTip = value;
+                RaisePropertyChanged("SrcToolTip");
+            }
+        }
+
+
         private void RaisePropertyChanged(string name)
         {
             var h = PropertyChanged;
@@ -264,38 +291,35 @@ namespace EPBClient
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            drawingContext.DrawEllipse(_brush, new Pen(Brushes.Gray, 1), new Point(13, 10), 10, 10);
-            drawingContext.DrawText(_num, new Point(13, 10));
+            drawingContext.DrawEllipse(Brush, new Pen(Brushes.Gray, 1), new Point(13, 10), 10, 10);
+            drawingContext.DrawText(NumText, new Point(9, 3));
         }
 
-        private Brush _brush;
-        private FormattedText _num;
+        public Brush Brush;
+        public FormattedText NumText;
 
         private static readonly DependencyProperty StatusProp =
             DependencyProperty.Register("Status", typeof(Status), typeof(BuildStatusEntity),
-            new FrameworkPropertyMetadata(default(Status), FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(default(Status), FrameworkPropertyMetadataOptions.AffectsRender, StatusValueChanged));
 
         public Status Status
         {
             get { return (Status)base.GetValue(StatusProp); }
-            set
-            {
-                base.SetValue(StatusProp, value);
-
-                _brush = GetBrush();
-                _num = new FormattedText(
-                    value.queuePos.ToString(),
-                    CultureInfo.GetCultureInfo("en-us"),
-                    FlowDirection.LeftToRight,
-                    new Typeface("Courier New"),
-                    14,
-                    Brushes.Black);
-            }
+            set { base.SetValue(StatusProp, value); }
         }
 
-        private Brush GetBrush()
+        private static void StatusValueChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs eventArgs)
         {
-            switch (Status.status)
+            var s = (Status)eventArgs.NewValue;
+            var e = dependencyObject as BuildStatusEntity;
+
+            e.Brush = GetBrush(s);
+            e.NumText = FormatText(s.queuePos);
+        }
+
+        private static Brush GetBrush(Status s)
+        {
+            switch (s.status)
             {
                 case BuildStatus.Building:
                     return Brushes.Yellow;
@@ -306,6 +330,17 @@ namespace EPBClient
             }
 
             return Brushes.Transparent;
+        }
+
+        private static FormattedText FormatText(string text)
+        {
+            return new FormattedText(
+                text,
+                CultureInfo.GetCultureInfo("en-us"),
+                FlowDirection.LeftToRight,
+                new Typeface("Courier New"),
+                14,
+                Brushes.Black);
         }
     }
 }

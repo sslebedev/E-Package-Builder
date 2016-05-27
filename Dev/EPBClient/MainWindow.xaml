@@ -3,11 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:EPBClient"
         Title="E-Package-Builder-Client" Height="382.8" Width="658.6" Icon="Resources/Icon1.ico">
-    
-    <Window.Resources>
-    </Window.Resources>
-    
-    <Grid  Name="mainGrid" Margin="0,0,0,4.8">
+
+    <Grid Name="mainGrid" Margin="0,0,0,4.8">
         <Menu HorizontalAlignment="Left" Height="19" VerticalAlignment="Top" Width="518">
             <MenuItem Header="Connection">
                 <MenuItem Header="Open" Click="MenuItem_Click_1"/>
@@ -16,18 +13,63 @@
             <MenuItem Header="About">
             </MenuItem>
         </Menu>
-        <DataGrid Name="ProjectsView" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,24,0,0" VerticalAlignment="Top" Height="305" Width="312" SelectionChanged="ProjectsView_SelectionChanged_1">
+        <DataGrid Name="ProjectsView" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,24,0,0" VerticalAlignment="Top" Height="305" Width="312" SelectionChanged="ProjectsView_SelectionChanged_1" IsReadOnly="True">
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <Setter Property="Height" Value="25"/>
                 </Style>
             </DataGrid.RowStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Name}" Header="Configuration" Width="100"/>
+                <DataGridTextColumn
+                    Binding="{Binding Name}"
+                    Header="Configuration" Width="100">
+                </DataGridTextColumn>
                 <DataGridTemplateColumn Header="Src" Width="30">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:BuildStatusEntity Status="{Binding SrcStatus}">
+                            <local:BuildStatusEntity
+                                Status="{Binding SrcStatus}"
+                                ToolTip="{Binding SrcToolTip}">
+                            </local:BuildStatusEntity>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="PC" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:BuildStatusEntity
+                                Status="{Binding SrcStatus}"
+                                ToolTip="{Binding SrcToolTip}">
+                            </local:BuildStatusEntity>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Retail" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:BuildStatusEntity
+                                Status="{Binding SrcStatus}"
+                                ToolTip="{Binding SrcToolTip}">
+                            </local:BuildStatusEntity>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Full" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:BuildStatusEntity
+                                Status="{Binding SrcStatus}"
+                                ToolTip="{Binding SrcToolTip}">
+                            </local:BuildStatusEntity>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Other" Width="30">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <local:BuildStatusEntity
+                                Status="{Binding SrcStatus}"
+                                ToolTip="{Binding SrcToolTip}">
                             </local:BuildStatusEntity>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -38,8 +80,12 @@
         <GroupBox Name="SelectedProjGroup" Header="Selected Proj" HorizontalAlignment="Left" Margin="344,19,0,0" VerticalAlignment="Top" Height="50" Width="99">
             <Label Name="SelectedProjText" Content="" HorizontalAlignment="Left" Height="27" VerticalAlignment="Top" Width="87" Margin="-1,0,0,0"/>
         </GroupBox>
-        <GroupBox Name="SVNversionGroup" Header="SVN version" HorizontalAlignment="Left" Margin="344,93,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.037,-0.554" Height="50" Width="99">
-            <Label Name="SVNVersionText" Content="Latest" HorizontalAlignment="Left" Height="28" VerticalAlignment="Top" Width="86" Margin="-1,-2,0,0"/>
+        <GroupBox Name="SVNversionGroup" Header="SVN version" HorizontalAlignment="Left" Margin="344,74,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.037,-0.554" Height="61" Width="99">
+            <Grid HorizontalAlignment="Left" Height="45" VerticalAlignment="Top" Width="86" Margin="0,0,0,-6.6">
+                <RadioButton Content="Latest" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-1,4,0,0" IsChecked="True"/>
+                <RadioButton Content="" HorizontalAlignment="Left" Margin="-1,20,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="17" Margin="15,20,0,0" TextWrapping="Wrap" Text="123" VerticalAlignment="Top" Width="44"/>
+            </Grid>
         </GroupBox>
         <GroupBox Name="BuildGroup" Header="Build" HorizontalAlignment="Left" Margin="460,19,0,0" VerticalAlignment="Top" Height="124" Width="169">
             <Grid HorizontalAlignment="Left" Height="100" VerticalAlignment="Top" Width="156">
@@ -59,5 +105,6 @@
             </RichTextBox>
         </GroupBox>
         <Button Name="ButtonCancel" Content="Cancel Build" HorizontalAlignment="Left" Margin="554,309,0,0" VerticalAlignment="Top" Width="75"/>
+        <Image HorizontalAlignment="Left" Height="100" Margin="341,151,0,0" VerticalAlignment="Top" Width="100"/>
     </Grid>
 </Window>

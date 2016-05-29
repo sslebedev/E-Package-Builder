@@ -70,10 +70,10 @@ namespace EPBClient
         {
             string msgName = msg.ReadName();
 
-            if (msgName == "Projects")
+            if (msgName == "ProjectsInfo")
             {
-                string projects = msg.Read();
-                SetProjects(projects.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
+                string s = msg.Read();
+                UpdateProjects(s.Split(new char[] { '\n' }));
             }
             else if (msgName == "BuildLog")
             {
@@ -83,16 +83,16 @@ namespace EPBClient
 
         private void OnServerConnected()
         {
-            var msg = ClientStorage.Client.NewMessage();
-            msg.WriteName("GetProjects");
-            msg.Write("");
-            msg.Send();
+            //var msg = ClientStorage.Client.NewMessage();
+            //msg.WriteName("GetProjects");
+            //msg.Write("");
+            //msg.Send();
         }
 
         private void OnServerDisconnected()
         {
             Logger.WriteLog("Server disconnected!");
-            SetProjects(new string[0]);
+            UpdateProjects(new string[0]);
         }
 
         private void MainWndAction(Action a)
@@ -100,14 +100,170 @@ namespace EPBClient
             Dispatcher.Invoke(a, null);
         }
 
-        private void SetProjects(string[] projects)
+        private void UpdateProjects(string[] projects)
         {
             MainWndAction(() =>
             {
                 _projects.Clear();
 
-                foreach (var proj in projects)
-                    _projects.Add(new ProjectsEntity(proj));
+                for (int i = 0; i < projects.Length;)
+                {
+                    string projName = projects[i++];
+                    var projEntity = new ProjectsEntity(projName);
+                    _projects.Add(projEntity);
+
+                    for (int j = 0; j < 5; ++j)
+                    {
+                        switch (projects[i++])
+                        {
+                            case "MakeSources":
+                                {
+                                    switch (projects[i++])
+                                    {
+                                        case "NotBuild":
+                                            if (projects[i++] == "True")
+                                                projEntity.SrcStatus = new Status(BuildStatus.Failed, projects[i++]);
+                                            else
+                                                projEntity.SrcStatus = new Status(BuildStatus.Failed, "");
+                                            string lastError = projects[i++];
+                                            if (lastError.Length != 0)
+                                            {
+                                                string version = projects[i++];
+                                                projEntity.SrcToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
+                                            }
+                                            else
+                                                projEntity.SrcToolTip = "not built";
+                                            break;
+                                        case "Build":
+                                            projEntity.SrcStatus = new Status(BuildStatus.Building, "0");
+                                            projEntity.SrcToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                        case "Ready":
+                                            projEntity.SrcStatus = new Status(BuildStatus.Ready, "");
+                                            projEntity.SrcToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                    }
+                                }
+                                break;
+                            case "BuildPC":
+                                {
+                                    switch (projects[i++])
+                                    {
+                                        case "NotBuild":
+                                            if (projects[i++] == "True")
+                                                projEntity.PCStatus = new Status(BuildStatus.Failed, projects[i++]);
+                                            else
+                                                projEntity.PCStatus = new Status(BuildStatus.Failed, "");
+                                            string lastError = projects[i++];
+                                            if (lastError.Length != 0)
+                                            {
+                                                string version = projects[i++];
+                                                projEntity.PCToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
+                                            }
+                                            else
+                                                projEntity.PCToolTip = "not built";
+                                            break;
+                                        case "Build":
+                                            projEntity.PCStatus = new Status(BuildStatus.Building, "0");
+                                            projEntity.PCToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                        case "Ready":
+                                            projEntity.PCStatus = new Status(BuildStatus.Ready, "");
+                                            projEntity.PCToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                    }
+                                }
+                                break;
+                            case "BuildRelease":
+                                {
+                                    switch (projects[i++])
+                                    {
+                                        case "NotBuild":
+                                            if (projects[i++] == "True")
+                                                projEntity.ReleaseStatus = new Status(BuildStatus.Failed, projects[i++]);
+                                            else
+                                                projEntity.ReleaseStatus = new Status(BuildStatus.Failed, "");
+                                            string lastError = projects[i++];
+                                            if (lastError.Length != 0)
+                                            {
+                                                string version = projects[i++];
+                                                projEntity.ReleaseToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
+                                            }
+                                            else
+                                                projEntity.ReleaseToolTip = "not built";
+                                            break;
+                                        case "Build":
+                                            projEntity.ReleaseStatus = new Status(BuildStatus.Building, "0");
+                                            projEntity.ReleaseToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                        case "Ready":
+                                            projEntity.ReleaseStatus = new Status(BuildStatus.Ready, "");
+                                            projEntity.ReleaseToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                    }
+                                }
+                                break;
+                            case "BuildFull":
+                                {
+                                    switch (projects[i++])
+                                    {
+                                        case "NotBuild":
+                                            if (projects[i++] == "True")
+                                                projEntity.FullStatus = new Status(BuildStatus.Failed, projects[i++]);
+                                            else
+                                                projEntity.FullStatus = new Status(BuildStatus.Failed, "");
+                                            string lastError = projects[i++];
+                                            if (lastError.Length != 0)
+                                            {
+                                                string version = projects[i++];
+                                                projEntity.FullToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
+                                            }
+                                            else
+                                                projEntity.FullToolTip = "not built";
+                                            break;
+                                        case "Build":
+                                            projEntity.FullStatus = new Status(BuildStatus.Building, "0");
+                                            projEntity.FullToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                        case "Ready":
+                                            projEntity.FullStatus = new Status(BuildStatus.Ready, "");
+                                            projEntity.FullToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                    }
+                                }
+                                break;
+                            case "BuildOther":
+                                {
+                                    switch (projects[i++])
+                                    {
+                                        case "NotBuild":
+                                            if (projects[i++] == "True")
+                                                projEntity.OtherStatus = new Status(BuildStatus.Failed, projects[i++]);
+                                            else
+                                                projEntity.OtherStatus = new Status(BuildStatus.Failed, "");
+                                            string lastError = projects[i++];
+                                            if (lastError.Length != 0)
+                                            {
+                                                string version = projects[i++];
+                                                projEntity.OtherToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
+                                            }
+                                            else
+                                                projEntity.OtherToolTip = "not built";
+                                            break;
+                                        case "Build":
+                                            projEntity.OtherStatus = new Status(BuildStatus.Building, "0");
+                                            projEntity.OtherToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                        case "Ready":
+                                            projEntity.OtherStatus = new Status(BuildStatus.Ready, "");
+                                            projEntity.OtherToolTip = String.Format("#version {0}", projects[i++]);
+                                            break;
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
             });
         }
 
@@ -163,6 +319,13 @@ namespace EPBClient
             }
         }
 
+        private string Version()
+        {
+            if (versionRadioButton.IsChecked.Value)
+                return "Latest";
+            return versionNum.Text;
+        }
+
         private void ButtonSources_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedProjText.Content as string == "")
@@ -170,7 +333,7 @@ namespace EPBClient
 
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("RequestBuild");
-            msg.Write(String.Format("{0}\n{1}", "Sources", SelectedProjText.Content));
+            msg.Write(String.Format("{0}\n{1}\n{2}", "Sources", SelectedProjText.Content, Version()));
             msg.Send();
         }
 
@@ -181,7 +344,7 @@ namespace EPBClient
 
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("RequestBuild");
-            msg.Write(String.Format("{0}\n{1}", "PC", SelectedProjText.Content));
+            msg.Write(String.Format("{0}\n{1}\n{2}", "PC", SelectedProjText.Content, Version()));
             msg.Send();
         }
 
@@ -192,7 +355,7 @@ namespace EPBClient
 
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("RequestBuild");
-            msg.Write(String.Format("{0}\n{1}", "Release", SelectedProjText.Content));
+            msg.Write(String.Format("{0}\n{1}\n{2}", "Release", SelectedProjText.Content, Version()));
             msg.Send();
         }
 
@@ -203,7 +366,7 @@ namespace EPBClient
 
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("RequestBuild");
-            msg.Write(String.Format("{0}\n{1}", "Full", SelectedProjText.Content));
+            msg.Write(String.Format("{0}\n{1}\n{2}", "Full", SelectedProjText.Content, Version()));
             msg.Send();
         }
     }
@@ -232,8 +395,6 @@ namespace EPBClient
         public ProjectsEntity(string name)
         {
             _name = name;
-            SrcStatus = new Status(BuildStatus.Building, "1");
-            SrcToolTip = "Version #Latest\nYour Task\nIn Progress";
         }
 
         private bool _isSelected;
@@ -275,6 +436,93 @@ namespace EPBClient
             }
         }
 
+        private Status _pc;
+        public Status PCStatus
+        {
+            get { return _pc; }
+            set
+            {
+                _pc = value;
+                RaisePropertyChanged("PCStatus");
+            }
+        }
+
+        private string _pcToolTip;
+        public string PCToolTip
+        {
+            get { return _pcToolTip; }
+            set
+            {
+                _pcToolTip = value;
+                RaisePropertyChanged("PCToolTip");
+            }
+        }
+
+        private Status _release;
+        public Status ReleaseStatus
+        {
+            get { return _release; }
+            set
+            {
+                _release = value;
+                RaisePropertyChanged("ReleaseStatus");
+            }
+        }
+
+        private string _releaseToolTip;
+        public string ReleaseToolTip
+        {
+            get { return _releaseToolTip; }
+            set
+            {
+                _releaseToolTip = value;
+                RaisePropertyChanged("ReleaseToolTip");
+            }
+        }
+
+        private Status _full;
+        public Status FullStatus
+        {
+            get { return _full; }
+            set
+            {
+                _full = value;
+                RaisePropertyChanged("FullStatus");
+            }
+        }
+
+        private string _fullToolTip;
+        public string FullToolTip
+        {
+            get { return _fullToolTip; }
+            set
+            {
+                _fullToolTip = value;
+                RaisePropertyChanged("FullToolTip");
+            }
+        }
+
+        private Status _other;
+        public Status OtherStatus
+        {
+            get { return _other; }
+            set
+            {
+                _other = value;
+                RaisePropertyChanged("OtherStatus");
+            }
+        }
+
+        private string _otherToolTip;
+        public string OtherToolTip
+        {
+            get { return _otherToolTip; }
+            set
+            {
+                _otherToolTip = value;
+                RaisePropertyChanged("OtherToolTip");
+            }
+        }
 
         private void RaisePropertyChanged(string name)
         {

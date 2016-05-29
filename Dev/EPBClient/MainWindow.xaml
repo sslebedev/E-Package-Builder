@@ -38,8 +38,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:BuildStatusEntity
-                                Status="{Binding SrcStatus}"
-                                ToolTip="{Binding SrcToolTip}">
+                                Status="{Binding PCStatus}"
+                                ToolTip="{Binding PCToolTip}">
                             </local:BuildStatusEntity>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -48,8 +48,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:BuildStatusEntity
-                                Status="{Binding SrcStatus}"
-                                ToolTip="{Binding SrcToolTip}">
+                                Status="{Binding ReleaseStatus}"
+                                ToolTip="{Binding ReleaseToolTip}">
                             </local:BuildStatusEntity>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -58,8 +58,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:BuildStatusEntity
-                                Status="{Binding SrcStatus}"
-                                ToolTip="{Binding SrcToolTip}">
+                                Status="{Binding FullStatus}"
+                                ToolTip="{Binding FullToolTip}">
                             </local:BuildStatusEntity>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -68,8 +68,8 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <local:BuildStatusEntity
-                                Status="{Binding SrcStatus}"
-                                ToolTip="{Binding SrcToolTip}">
+                                Status="{Binding OtherStatus}"
+                                ToolTip="{Binding OtherToolTip}">
                             </local:BuildStatusEntity>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -82,9 +82,9 @@
         </GroupBox>
         <GroupBox Name="SVNversionGroup" Header="SVN version" HorizontalAlignment="Left" Margin="344,74,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.037,-0.554" Height="61" Width="99">
             <Grid HorizontalAlignment="Left" Height="45" VerticalAlignment="Top" Width="86" Margin="0,0,0,-6.6">
-                <RadioButton Content="Latest" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-1,4,0,0" IsChecked="True"/>
+                <RadioButton Name="versionRadioButton" Content="Latest" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-1,4,0,0" IsChecked="True"/>
                 <RadioButton Content="" HorizontalAlignment="Left" Margin="-1,20,0,0" VerticalAlignment="Top"/>
-                <TextBox HorizontalAlignment="Left" Height="17" Margin="15,20,0,0" TextWrapping="Wrap" Text="123" VerticalAlignment="Top" Width="44"/>
+                <TextBox Name="versionNum" HorizontalAlignment="Left" Height="17" Margin="15,20,0,0" TextWrapping="Wrap" Text="123" VerticalAlignment="Top" Width="44"/>
             </Grid>
         </GroupBox>
         <GroupBox Name="BuildGroup" Header="Build" HorizontalAlignment="Left" Margin="460,19,0,0" VerticalAlignment="Top" Height="124" Width="169">

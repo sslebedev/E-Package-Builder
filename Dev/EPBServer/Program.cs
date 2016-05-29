@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EPBMessanger;
 using System.Text;
 using EPackageBuilder;
+using System.Collections.Generic;
 
 namespace EPBServer
 {
@@ -51,6 +52,8 @@ namespace EPBServer
             }
         }
 
+        private static readonly Dictionary<int, ISender> clients = new Dictionary<int, ISender>();
+
         private static void OnClientConnected(ReceivedMessage msg, ISender client, out object param)
         {
             param = null;
@@ -65,6 +68,8 @@ namespace EPBServer
             var clientParam = ClientParamBase.Make();
             param = clientParam;
 
+            clients.Add(clientParam.UID, client);
+
             Console.WriteLine("New client connected\n" +
                 "Connection message: {0}\n" +
                 "Granted UID: {1}\n\n", message, clientParam.UID);
@@ -73,6 +78,25 @@ namespace EPBServer
             newMsg.WriteName("ServerResponse");
             newMsg.Write("Connection success");
             newMsg.Send();
+
+            if (message == "EPB2Client")
+            {
+                WritableMessage projectsMsg = client.NewMessage();
+                projectsMsg.WriteName("ProjectsInfo");
+                projectsMsg.Write(Builder.GenerateProjectsInfo());
+                projectsMsg.Send();
+            }
+        }
+
+        private static void OnProjectStateUpdate()
+        {
+            foreach (var client in clients)
+            {
+                WritableMessage projectsMsg = client.Value.NewMessage();
+                projectsMsg.WriteName("ProjectsInfo");
+                projectsMsg.Write(Builder.GenerateProjectsInfo());
+                projectsMsg.Send();
+            }
         }
 
         private static void OnClientDisconnected(object param)
@@ -80,7 +104,10 @@ namespace EPBServer
             if (param == null)
                 return;
 
+
             var clientParam = (ClientParamBase)param;
+
+            clients.Remove(clientParam.UID);
 
             Console.WriteLine("Client disconnected\n" +
                 "Client UID: {0}\n\n", clientParam.UID);
@@ -107,9 +134,10 @@ namespace EPBServer
                     var args = message.Split();
 
                     Action<Builder.BuildType> addBuildRequest = buildType => 
-                        Builder.AddBuildRequest(clientParam.UID,
+                         Builder.AddBuildRequest(clientParam.UID,
                                 new ClientLogger(client),
                                 args[1],
+                                args[2],
                                 buildType);
                     switch (args[0])
                     {
@@ -182,7 +210,8 @@ namespace EPBServer
                 // Init builder
                 Builder.Init();
                 Console.WriteLine(GenerateBuilderInfo());
-            
+                Builder.OnProjectsStateUpdate += OnProjectStateUpdate;
+
                 // Start tasks
                 Task.Run(() => Server.Start());
                 Task.Run(() => Builder.Start());
@@ -195,7 +224,7 @@ namespace EPBServer
         private static string GenerateBuilderInfo()
         {
             var sb = new StringBuilder("Available projects:\n");
-            for (var i = 0; i < Builder.Projects.Count; ++i) {
+            for (var i = 0; i < Builder.Projects.Length; ++i) {
                 sb.Append("    ");
                 sb.Append(i + 1);
                 sb.Append(". ");

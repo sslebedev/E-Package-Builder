@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Text;
 
 namespace EPBServer
 {
@@ -24,18 +25,126 @@ namespace EPBServer
         {
             public int OwnerUID; // TODO resharper warns it is unused, is it right?
             public string ProjectName;
+            public string Version;
             public BuilderFunctions.ILogger Logger;
             public BuildType Type;
         };
 
+        private enum ProjectState
+        {
+            NotBuild,
+            Build,
+            Ready,
+        };
+
+        private class ProjectEntity
+        {
+            public readonly string      Name;
+
+            public struct Info
+            {
+                public static Info CreateDefault()
+                {
+                    var info = new Info()
+                    {
+                        State       = ProjectState.NotBuild,
+                        Version     = "",
+                        LastError   = "",
+
+                        Requested   = false,
+                        QueuePos    = -1
+                    };
+
+                    return info;
+                }
+
+                public override string ToString()
+                {
+                    StringBuilder sb = new StringBuilder();
+
+                    switch (State)
+                    {
+                        case ProjectState.NotBuild:
+                            sb.Append("NotBuild\n");
+                            sb.Append(Requested.ToString());
+                            sb.Append('\n');
+                            if (Requested)
+                            {
+                                sb.Append(QueuePos.ToString());
+                                sb.Append('\n');
+                            }
+                            sb.Append(LastError);
+                            if (LastError.Length != 0)
+                            {
+                                sb.Append('\n');
+                                sb.Append(Version);
+                            }
+                            break;
+                        case ProjectState.Build:
+                            sb.Append("Build\n");
+                            sb.Append(Version);
+                            break;
+                        case ProjectState.Ready:
+                            sb.Append("Ready\n");
+                            sb.Append(Version);
+                            break;
+                    }
+
+                    return sb.ToString();
+                }
+
+                public ProjectState     State;
+                public string           Version;
+                public string           LastError;
+
+                public bool             Requested;
+                public int              QueuePos;
+            }
+
+            public readonly Dictionary<BuildType, Info> BuildInfo = new Dictionary<BuildType, Info>();
+
+            public ProjectEntity(string projectName)
+            {
+                Name = projectName;
+
+                BuildInfo.Add(BuildType.MakeSources,    Info.CreateDefault());
+                BuildInfo.Add(BuildType.BuildPC,        Info.CreateDefault());
+                BuildInfo.Add(BuildType.BuildRelease,   Info.CreateDefault());
+                BuildInfo.Add(BuildType.BuildFull,      Info.CreateDefault());
+                BuildInfo.Add(BuildType.BuildOther,     Info.CreateDefault());
+            }
+
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append(Name);
+
+                foreach (var p in BuildInfo)
+                {
+                    sb.Append('\n');
+                    sb.Append(Enum.GetName(p.Key.GetType(), p.Key));
+                    sb.Append('\n');
+                    sb.Append(p.Value.ToString());
+                }
+
+                return sb.ToString();
+            }
+        }
+
         private readonly BlockingCollection<BuildRequest> buildQueue
             = new BlockingCollection<BuildRequest>(); // ConcurentQueue by default
+        private int buildQueuePosition = 0;
 
-
-        private readonly List<string> projects = new List<string>();
-        public List<string> Projects
+        private readonly Dictionary<string, ProjectEntity> projects = new Dictionary<string, ProjectEntity>();
+        private readonly Object projectsLock = new Object();
+        public string[] Projects
         {
-            get { return projects; }
+            get
+            {
+                var keys = new string[projects.Keys.Count];
+                projects.Keys.CopyTo(keys, 0);
+                return keys;
+            }
         }
 
         private string configDir;
@@ -53,19 +162,41 @@ namespace EPBServer
             foreach (var fi in fileInfos) {
                 // get file name without extension
                 var projectName = fi.Name.Remove(fi.Name.Length - 4); // TODO refactor this. http://lmgtfy.com/?q=c%23+get+filename+with+extension
-                projects.Add(projectName);
+                projects.Add(projectName, new ProjectEntity(projectName));
             }
         }
 
-        public void AddBuildRequest(int clientUID, BuilderFunctions.ILogger logger, string projectName, BuildType type)
+        public string GenerateProjectsInfo()
         {
-            var request = new BuildRequest {
+            lock (projectsLock)
+            {
+                StringBuilder sb = new StringBuilder();
+
+                bool r = false;
+                foreach (var p in projects.Values)
+                {
+                    if (r)
+                        sb.Append('\n');
+                    r = true;
+                    sb.Append(p.ToString());
+                }
+
+                return sb.ToString();
+            }
+        }
+
+        public void AddBuildRequest(int clientUID, BuilderFunctions.ILogger logger, string projectName, string version, BuildType type)
+        {
+            var request = new BuildRequest
+            {
                 OwnerUID = clientUID,
                 ProjectName = projectName,
                 Logger = logger,
-                Type = type
+                Type = type,
+                Version = version
             };
 
+            OnBuildAdd(request.ProjectName, request.Type);
             buildQueue.Add(request);
         }
 
@@ -76,7 +207,7 @@ namespace EPBServer
                 try {
                     request = buildQueue.Take(); // Blocks
                 } catch (InvalidOperationException) {
-                    Debug.Assert(false, "Unreachible code");
+                    Debug.Assert(false, "Unreachable code");
                 }
 
                 if (request != null) {
@@ -87,13 +218,111 @@ namespace EPBServer
 
         private void ProcessRequest(BuildRequest request)
         {
-            if (checkoutedConfig != null && request.ProjectName == checkoutedConfig) {
-                Task.Delay(10000).ContinueWith(_ => buildQueue.Add(request));
+            if (checkoutedConfig != null && request.ProjectName == checkoutedConfig)
+            {
+                Task.Delay(10000).ContinueWith(_ =>
+                {
+                    OnBuildAdd(request.ProjectName, request.Type);
+                    buildQueue.Add(request);
+                });
                 return;
             }
 
-            Build(request);
+
+            OnBuildStart(request.ProjectName, request.Type, request.Version);
+            bool success = false;
+            string errorMsg = null;
+            try
+            {
+                //Build(request);
+                Thread.Sleep(7000); // HACK : testing
+                success = true;
+            }
+            catch (BuilderFunctions.FunctionFailedExeption e)
+            {
+                errorMsg = e.Message;
+            }
+            finally
+            {
+                OnBuildEnd(request.ProjectName, request.Type, success, errorMsg);
+            }
         }
+
+        private void OnBuildStart(string projName, BuildType type, string version)
+        {
+            lock (projectsLock)
+            {
+                var r = projects[projName].BuildInfo[type];
+                Debug.Assert(r.Requested == true);
+                Debug.Assert(r.QueuePos == 0);
+
+                r.State = ProjectState.Build;
+                r.Version = version;
+                projects[projName].BuildInfo[type] = r;
+
+                var h = OnProjectsStateUpdate;
+                if (h != null)
+                    h();
+            }
+        }
+
+        private void OnBuildEnd(string projName, BuildType type, bool success, string errorMsg)
+        {
+            lock (projectsLock)
+            {
+                buildQueuePosition--;
+                var r = projects[projName].BuildInfo[type];
+                Debug.Assert(r.State == ProjectState.Build);
+                Debug.Assert(r.Requested == true);
+
+                r.Requested = false;
+                if (success)
+                    r.State = ProjectState.Ready;
+                else
+                {
+                    r.State = ProjectState.NotBuild;
+
+
+                    if (errorMsg != null)
+                        r.LastError = errorMsg;
+                    else
+                        r.LastError = "unknown error";
+                }
+                projects[projName].BuildInfo[type] = r;
+
+                foreach (var p in buildQueue)
+                {
+                    var r_ = projects[p.ProjectName].BuildInfo[p.Type];
+                    r_.QueuePos -= 1;
+
+                    projects[p.ProjectName].BuildInfo[p.Type] = r_;
+                }
+
+                var h = OnProjectsStateUpdate;
+                if (h != null)
+                    h();
+            }
+        }
+
+        private void OnBuildAdd(string projName, BuildType type)
+        {
+            lock (projectsLock)
+            {
+                var r = projects[projName].BuildInfo[type];
+                if (r.State == ProjectState.Build || r.Requested == true)
+                    return;
+
+                r.QueuePos = buildQueuePosition++;
+                r.Requested = true;
+                projects[projName].BuildInfo[type] = r;
+
+                var h = OnProjectsStateUpdate;
+                if (h != null)
+                    h();
+            }
+        }
+
+        public event Action OnProjectsStateUpdate;
 
         private class Config
         {

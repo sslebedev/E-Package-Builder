@@ -41,7 +41,7 @@ namespace EPBServer
         {
             public readonly string      Name;
 
-            public struct Info
+            public class Info
             {
                 public static Info CreateDefault()
                 {
@@ -86,6 +86,13 @@ namespace EPBServer
                             break;
                         case ProjectState.Ready:
                             sb.Append("Ready\n");
+                            sb.Append(Requested.ToString());
+                            sb.Append('\n');
+                            if (Requested)
+                            {
+                                sb.Append(QueuePos.ToString());
+                                sb.Append('\n');
+                            }
                             sb.Append(Version);
                             break;
                     }
@@ -131,11 +138,75 @@ namespace EPBServer
             }
         }
 
+        private BuildRequest Take()
+        {
+            while (true)
+            {
+                lock (_lock)
+                {
+                    if (_storage.Count > 0)
+                    {
+                        BuildRequest request = _storage.First.Value;
+
+                        // update position
+                        for (var cur = _storage.First; cur != null; cur = cur.Next)
+                            GetInfo(cur.Value).QueuePos -= 1;
+
+                        Debug.Assert(GetInfo(request).QueuePos == 0);
+                        _storage.RemoveFirst();
+                        Debug.Assert(_storage.Count == 0 ||
+                            GetInfo(_storage.First.Value).QueuePos == 1);
+
+                        return request;
+                    }
+                }
+
+                Thread.Sleep(100);
+            }
+        }
+
+        private void Push(BuildRequest request)
+        {
+            lock (_lock)
+            {
+                GetInfo(request).QueuePos = _storage.Count + 1;
+                _storage.AddLast(request);
+            }
+        }
+
+        private BuildRequest Remove(Predicate<BuildRequest> trigger)
+        {
+            lock (_lock)
+            {
+                LinkedListNode<BuildRequest> deleted = null;
+                for (var cur = _storage.First; cur != null; cur = cur.Next)
+                {
+                    if (trigger.Invoke(cur.Value))
+                    {
+                        deleted = cur;
+                        break;
+                    }
+                }
+
+                // project build already started
+                if (deleted == null)
+                    return null;
+
+                for (var cur = deleted.Next; cur != null; cur = cur.Next)
+                    GetInfo(cur.Value).QueuePos -= 1;
+
+                _storage.Remove(deleted);
+                return deleted.Value;
+            }
+        }
+
+        private readonly LinkedList<BuildRequest> _storage = new LinkedList<BuildRequest>();
+        private readonly Object _lock = new Object();
+
         private readonly BlockingCollection<BuildRequest> buildQueue
             = new BlockingCollection<BuildRequest>(); // ConcurentQueue by default
-        private int buildQueuePosition = 0;
 
-        private readonly Dictionary<string, ProjectEntity> projects = new Dictionary<string, ProjectEntity>();
+        private static readonly Dictionary<string, ProjectEntity> projects = new Dictionary<string, ProjectEntity>();
         private readonly Object projectsLock = new Object();
         public string[] Projects
         {
@@ -145,6 +216,11 @@ namespace EPBServer
                 projects.Keys.CopyTo(keys, 0);
                 return keys;
             }
+        }
+
+        private ProjectEntity.Info GetInfo(BuildRequest request)
+        {
+            return projects[request.ProjectName].BuildInfo[request.Type];
         }
 
         private string configDir;
@@ -196,46 +272,85 @@ namespace EPBServer
                 Version = version
             };
 
-            OnBuildAdd(request.ProjectName, request.Type);
-            buildQueue.Add(request);
+            lock (projectsLock)
+            {
+                // project build already request
+                if (GetInfo(request).State == ProjectState.Build || GetInfo(request).Requested)
+                    return;
+
+                GetInfo(request).Requested = true;
+                Push(request);
+            }
+
+            var h = OnProjectsStateUpdate;
+            if (h != null)
+                h();
+        }
+
+        public void CancelBuildRequest(int clientUID, string projectName)
+        {
+            lock (projectsLock)
+            {
+                bool update = false;
+                while (true)
+                {
+                    BuildRequest canceled = Remove(request => request.OwnerUID == clientUID && request.ProjectName == projectName);
+                    if (canceled == null)
+                    {
+                        if (update)
+                            break;
+                        else
+                            return;
+                    }
+
+                    GetInfo(canceled).State = ProjectState.NotBuild;
+                    GetInfo(canceled).LastError = "build was canceled";
+                    GetInfo(canceled).Requested = false;
+                    update = true;
+                }
+            }
+
+            var h = OnProjectsStateUpdate;
+            if (h != null)
+                h();
         }
 
         public void Start()
         {
-            while (!buildQueue.IsCompleted) {
-                BuildRequest request = null;
-                try {
-                    request = buildQueue.Take(); // Blocks
-                } catch (InvalidOperationException) {
-                    Debug.Assert(false, "Unreachable code");
-                }
+            while (true) {
+                BuildRequest request = Take();
 
-                if (request != null) {
-                    ProcessRequest(request);
-                }
+                Debug.Assert(request != null);
+                ProcessRequest(request);
+
+                Thread.Sleep(200);
             }
         }
 
         private void ProcessRequest(BuildRequest request)
         {
-            if (checkoutedConfig != null && request.ProjectName == checkoutedConfig)
+            if (checkoutedProj != null && request.ProjectName == checkoutedProj)
             {
-                Task.Delay(10000).ContinueWith(_ =>
-                {
-                    OnBuildAdd(request.ProjectName, request.Type);
-                    buildQueue.Add(request);
-                });
+                Thread.Sleep(1000);
+
+                lock (projectsLock)
+                    Push(request);
+
+                var h = OnProjectsStateUpdate;
+                if (h != null)
+                    h();
+
                 return;
             }
 
 
-            OnBuildStart(request.ProjectName, request.Type, request.Version);
+            OnBuildStart(request);
             bool success = false;
             string errorMsg = null;
             try
             {
                 //Build(request);
-                Thread.Sleep(7000); // HACK : testing
+                Thread.Sleep(3000); // HACK : testing
                 success = true;
             }
             catch (BuilderFunctions.FunctionFailedExeption e)
@@ -244,82 +359,53 @@ namespace EPBServer
             }
             finally
             {
-                OnBuildEnd(request.ProjectName, request.Type, success, errorMsg);
+                OnBuildEnd(request, success, errorMsg);
             }
         }
 
-        private void OnBuildStart(string projName, BuildType type, string version)
+        private void OnBuildStart(BuildRequest request)
         {
             lock (projectsLock)
             {
-                var r = projects[projName].BuildInfo[type];
-                Debug.Assert(r.Requested == true);
-                Debug.Assert(r.QueuePos == 0);
+                Debug.Assert(GetInfo(request).Requested == true);
+                Debug.Assert(GetInfo(request).QueuePos == 0);
 
-                r.State = ProjectState.Build;
-                r.Version = version;
-                projects[projName].BuildInfo[type] = r;
-
-                var h = OnProjectsStateUpdate;
-                if (h != null)
-                    h();
+                GetInfo(request).State = ProjectState.Build;
+                GetInfo(request).Version = request.Version;
             }
+
+            var h = OnProjectsStateUpdate;
+            if (h != null)
+                h();
         }
 
-        private void OnBuildEnd(string projName, BuildType type, bool success, string errorMsg)
+        private void OnBuildEnd(BuildRequest request, bool success, string errorMsg)
         {
             lock (projectsLock)
             {
-                buildQueuePosition--;
-                var r = projects[projName].BuildInfo[type];
-                Debug.Assert(r.State == ProjectState.Build);
-                Debug.Assert(r.Requested == true);
+                var info = GetInfo(request);
+                Debug.Assert(info.Requested);
+                Debug.Assert(info.State == ProjectState.Build);
 
-                r.Requested = false;
+                info.Requested = false;
+
                 if (success)
-                    r.State = ProjectState.Ready;
+                    info.State = ProjectState.Ready;
                 else
                 {
-                    r.State = ProjectState.NotBuild;
+                    info.State = ProjectState.NotBuild;
 
 
                     if (errorMsg != null)
-                        r.LastError = errorMsg;
+                        info.LastError = errorMsg;
                     else
-                        r.LastError = "unknown error";
+                        info.LastError = "unknown error";
                 }
-                projects[projName].BuildInfo[type] = r;
-
-                foreach (var p in buildQueue)
-                {
-                    var r_ = projects[p.ProjectName].BuildInfo[p.Type];
-                    r_.QueuePos -= 1;
-
-                    projects[p.ProjectName].BuildInfo[p.Type] = r_;
-                }
-
-                var h = OnProjectsStateUpdate;
-                if (h != null)
-                    h();
             }
-        }
 
-        private void OnBuildAdd(string projName, BuildType type)
-        {
-            lock (projectsLock)
-            {
-                var r = projects[projName].BuildInfo[type];
-                if (r.State == ProjectState.Build || r.Requested == true)
-                    return;
-
-                r.QueuePos = buildQueuePosition++;
-                r.Requested = true;
-                projects[projName].BuildInfo[type] = r;
-
-                var h = OnProjectsStateUpdate;
-                if (h != null)
-                    h();
-            }
+            var h = OnProjectsStateUpdate;
+            if (h != null)
+                h();
         }
 
         public event Action OnProjectsStateUpdate;
@@ -393,9 +479,11 @@ namespace EPBServer
         }
 
         private string checkoutedConfig;
+        private string checkoutedProj;
 
         public string CheckoutConfig(string name)
         {
+            checkoutedProj = name;
             checkoutedConfig = configDir + "/" + name + ".cfg";
             return File.ReadAllText(checkoutedConfig);
         }
@@ -404,6 +492,13 @@ namespace EPBServer
         {
             File.WriteAllText(checkoutedConfig, file);
             checkoutedConfig = null;
+            checkoutedProj = null;
+        }
+
+        public void CheckinCancel()
+        {
+            checkoutedConfig = null;
+            checkoutedProj = null;
         }
     }
 }

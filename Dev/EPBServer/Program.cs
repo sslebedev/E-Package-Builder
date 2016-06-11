@@ -158,7 +158,10 @@ namespace EPBServer
                             addBuildRequest(Builder.BuildType.BuildFull);
                             break;
                     }
-                }
+                    }
+                    break;
+                case "CancelBuild":
+                    Builder.CancelBuildRequest(clientParam.UID, message);
                     break;
                 case "UpdateQueueTable":
                     Debug.Assert(false, "NotImplemented"); // TODO implement it
@@ -178,6 +181,12 @@ namespace EPBServer
                     clientMsg.Write(Builder.CheckoutConfig(message));
                     clientMsg.Send();
                     }
+                    break;
+                case "CheckInConfigFile":
+                    Builder.CheckinConfig(message);
+                    break;
+                case "CheckInConfigCancel":
+                    Builder.CheckinCancel();
                     break;
                 default:
                     throw new Exception("Unknown request"); // TODO Handle it

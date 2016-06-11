@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Diagnostics;
 
 namespace EPBClient
 {
@@ -100,6 +101,54 @@ namespace EPBClient
             Dispatcher.Invoke(a, null);
         }
 
+        private void ReadBuildStatus(string[] msg, ref int index, out Status status, out string tooltip)
+        {
+            switch (msg[index++])
+            {
+                case "NotBuild":
+                    {
+                        string requested = msg[index++];
+                        Debug.Assert(requested == "False" || requested == "True");
+
+                        if (requested == "True")
+                            status = new Status(BuildStatus.Failed, msg[index++]);
+                        else
+                            status = new Status(BuildStatus.Failed, "");
+
+                        string lastError = msg[index++];
+                        if (lastError.Length != 0)
+                            tooltip = String.Format("#version {0}\nlast error: {1}", msg[index++], lastError);
+                        else
+                            tooltip = "not built";
+                    }
+                    break;
+                case "Build":
+                    {
+                        status = new Status(BuildStatus.Building, "0");
+                        tooltip = String.Format("#version {0}", msg[index++]);
+                    }
+                    break;
+                case "Ready":
+                    {
+                        string requested = msg[index++];
+                        Debug.Assert(requested == "False" || requested == "True");
+
+                        if (requested == "True")
+                            status = new Status(BuildStatus.Ready, msg[index++]);
+                        else
+                            status = new Status(BuildStatus.Ready, "");
+
+                        tooltip = String.Format("#version {0}", msg[index++]);
+                    }
+                    break;
+                default:
+                    status = default(Status);
+                    tooltip = null;
+                    Debug.Fail("unreachable code");
+                    break;
+            }
+        }
+
         private void UpdateProjects(string[] projects)
         {
             MainWndAction(() =>
@@ -114,151 +163,44 @@ namespace EPBClient
 
                     for (int j = 0; j < 5; ++j)
                     {
+                        Status status;
+                        string tooltip;
+
                         switch (projects[i++])
                         {
                             case "MakeSources":
                                 {
-                                    switch (projects[i++])
-                                    {
-                                        case "NotBuild":
-                                            if (projects[i++] == "True")
-                                                projEntity.SrcStatus = new Status(BuildStatus.Failed, projects[i++]);
-                                            else
-                                                projEntity.SrcStatus = new Status(BuildStatus.Failed, "");
-                                            string lastError = projects[i++];
-                                            if (lastError.Length != 0)
-                                            {
-                                                string version = projects[i++];
-                                                projEntity.SrcToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
-                                            }
-                                            else
-                                                projEntity.SrcToolTip = "not built";
-                                            break;
-                                        case "Build":
-                                            projEntity.SrcStatus = new Status(BuildStatus.Building, "0");
-                                            projEntity.SrcToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                        case "Ready":
-                                            projEntity.SrcStatus = new Status(BuildStatus.Ready, "");
-                                            projEntity.SrcToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                    }
+                                    ReadBuildStatus(projects, ref i, out status, out tooltip);
+                                    projEntity.SrcStatus = status;
+                                    projEntity.SrcToolTip = tooltip;
                                 }
                                 break;
                             case "BuildPC":
                                 {
-                                    switch (projects[i++])
-                                    {
-                                        case "NotBuild":
-                                            if (projects[i++] == "True")
-                                                projEntity.PCStatus = new Status(BuildStatus.Failed, projects[i++]);
-                                            else
-                                                projEntity.PCStatus = new Status(BuildStatus.Failed, "");
-                                            string lastError = projects[i++];
-                                            if (lastError.Length != 0)
-                                            {
-                                                string version = projects[i++];
-                                                projEntity.PCToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
-                                            }
-                                            else
-                                                projEntity.PCToolTip = "not built";
-                                            break;
-                                        case "Build":
-                                            projEntity.PCStatus = new Status(BuildStatus.Building, "0");
-                                            projEntity.PCToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                        case "Ready":
-                                            projEntity.PCStatus = new Status(BuildStatus.Ready, "");
-                                            projEntity.PCToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                    }
+                                    ReadBuildStatus(projects, ref i, out status, out tooltip);
+                                    projEntity.PCStatus = status;
+                                    projEntity.PCToolTip = tooltip;
                                 }
                                 break;
                             case "BuildRelease":
                                 {
-                                    switch (projects[i++])
-                                    {
-                                        case "NotBuild":
-                                            if (projects[i++] == "True")
-                                                projEntity.ReleaseStatus = new Status(BuildStatus.Failed, projects[i++]);
-                                            else
-                                                projEntity.ReleaseStatus = new Status(BuildStatus.Failed, "");
-                                            string lastError = projects[i++];
-                                            if (lastError.Length != 0)
-                                            {
-                                                string version = projects[i++];
-                                                projEntity.ReleaseToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
-                                            }
-                                            else
-                                                projEntity.ReleaseToolTip = "not built";
-                                            break;
-                                        case "Build":
-                                            projEntity.ReleaseStatus = new Status(BuildStatus.Building, "0");
-                                            projEntity.ReleaseToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                        case "Ready":
-                                            projEntity.ReleaseStatus = new Status(BuildStatus.Ready, "");
-                                            projEntity.ReleaseToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                    }
+                                    ReadBuildStatus(projects, ref i, out status, out tooltip);
+                                    projEntity.ReleaseStatus = status;
+                                    projEntity.ReleaseToolTip = tooltip;
                                 }
                                 break;
                             case "BuildFull":
                                 {
-                                    switch (projects[i++])
-                                    {
-                                        case "NotBuild":
-                                            if (projects[i++] == "True")
-                                                projEntity.FullStatus = new Status(BuildStatus.Failed, projects[i++]);
-                                            else
-                                                projEntity.FullStatus = new Status(BuildStatus.Failed, "");
-                                            string lastError = projects[i++];
-                                            if (lastError.Length != 0)
-                                            {
-                                                string version = projects[i++];
-                                                projEntity.FullToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
-                                            }
-                                            else
-                                                projEntity.FullToolTip = "not built";
-                                            break;
-                                        case "Build":
-                                            projEntity.FullStatus = new Status(BuildStatus.Building, "0");
-                                            projEntity.FullToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                        case "Ready":
-                                            projEntity.FullStatus = new Status(BuildStatus.Ready, "");
-                                            projEntity.FullToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                    }
+                                    ReadBuildStatus(projects, ref i, out status, out tooltip);
+                                    projEntity.FullStatus = status;
+                                    projEntity.FullToolTip = tooltip;
                                 }
                                 break;
                             case "BuildOther":
                                 {
-                                    switch (projects[i++])
-                                    {
-                                        case "NotBuild":
-                                            if (projects[i++] == "True")
-                                                projEntity.OtherStatus = new Status(BuildStatus.Failed, projects[i++]);
-                                            else
-                                                projEntity.OtherStatus = new Status(BuildStatus.Failed, "");
-                                            string lastError = projects[i++];
-                                            if (lastError.Length != 0)
-                                            {
-                                                string version = projects[i++];
-                                                projEntity.OtherToolTip = String.Format("#version {0}\nlast error: {1}", version, lastError);
-                                            }
-                                            else
-                                                projEntity.OtherToolTip = "not built";
-                                            break;
-                                        case "Build":
-                                            projEntity.OtherStatus = new Status(BuildStatus.Building, "0");
-                                            projEntity.OtherToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                        case "Ready":
-                                            projEntity.OtherStatus = new Status(BuildStatus.Ready, "");
-                                            projEntity.OtherToolTip = String.Format("#version {0}", projects[i++]);
-                                            break;
-                                    }
+                                    ReadBuildStatus(projects, ref i, out status, out tooltip);
+                                    projEntity.OtherStatus = status;
+                                    projEntity.OtherToolTip = tooltip;
                                 }
                                 break;
                         }
@@ -367,6 +309,17 @@ namespace EPBClient
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("RequestBuild");
             msg.Write(String.Format("{0}\n{1}\n{2}", "Full", SelectedProjText.Content, Version()));
+            msg.Send();
+        }
+
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedProjText.Content as string == "")
+                return;
+
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("CancelBuild");
+            msg.Write(SelectedProjText.Content as string);
             msg.Send();
         }
     }

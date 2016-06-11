@@ -67,7 +67,6 @@ namespace epb
 
                 MainWndAction(new Action(() =>
                 {
-
                     textBox1.Text = FilePaths[0];
                     textBox2.Text = FilePaths[1];
                     textBox3.Text = FilePaths[2];
@@ -104,6 +103,11 @@ namespace epb
             string selectedProject = listBox1.SelectedItem.ToString();
             //MessageBox.Show(selectedProject + ".txt");
 
+            if (((string)label2.Content).Length != 0)
+            {
+                CheckInConfig();
+            }
+
             label2.Content = selectedProject;
 
             var msg = ClientStorage.Client.NewMessage();
@@ -115,17 +119,44 @@ namespace epb
 
         private void button1_Click(object sender, RoutedEventArgs e)
         {
-            label2.Content = "Config is not selected";
-            textBox1.Text = "Nil";
-            textBox2.Text = "Nil";
-            textBox3.Text = "Nil";
-            textBox4.Text = "Nil";
-            textBox5.Text = "Nil";
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("CheckInConfigCancel");
+            msg.Write("");
+            msg.Send();
+
+            label2.Content = "";
+            textBox1.Text = "";
+            textBox2.Text = "";
+            textBox3.Text = "";
+            textBox4.Text = "";
+            textBox5.Text = "";
         }
 
         private void button2_Click(object sender, RoutedEventArgs e)
         {
+            CheckInConfig();
 
+            label2.Content = "";
+            textBox1.Text = "";
+            textBox2.Text = "";
+            textBox3.Text = "";
+            textBox4.Text = "";
+            textBox5.Text = "";
+        }
+
+        private void CheckInConfig()
+        {
+            string cfgFileNew = String.Format("{0}\n{1}\n{2}\n{3}\n{4}",
+                    textBox1.Text,
+                    textBox2.Text,
+                    textBox3.Text,
+                    textBox4.Text,
+                    textBox5.Text);
+
+            var msg = ClientStorage.Client.NewMessage();
+            msg.WriteName("CheckInConfigFile");
+            msg.Write(cfgFileNew);
+            msg.Send();
         }
 
         private void button3_Click(object sender, RoutedEventArgs e)

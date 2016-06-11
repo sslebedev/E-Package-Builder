@@ -179,6 +179,12 @@ namespace EPBServer
                     clientMsg.Send();
                     }
                     break;
+                case "CheckInConfigFile":
+                    Builder.CheckinConfig(message);
+                    break;
+                case "CheckInConfigCancel":
+                    Builder.CheckinCancel();
+                    break;
                 default:
                     throw new Exception("Unknown request"); // TODO Handle it
             }

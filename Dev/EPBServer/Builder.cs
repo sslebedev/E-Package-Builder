@@ -218,9 +218,17 @@ namespace EPBServer
 
         private void ProcessRequest(BuildRequest request)
         {
-            if (checkoutedConfig != null && request.ProjectName == checkoutedConfig)
+            if (checkoutedProj != null && request.ProjectName == checkoutedProj)
             {
-                Task.Delay(10000).ContinueWith(_ =>
+                foreach (var p in buildQueue)
+                {
+                    var r_ = projects[p.ProjectName].BuildInfo[p.Type];
+                    r_.QueuePos -= 1;
+
+                    projects[p.ProjectName].BuildInfo[p.Type] = r_;
+                }
+
+                Task.Delay(2000).ContinueWith(_ =>
                 {
                     OnBuildAdd(request.ProjectName, request.Type);
                     buildQueue.Add(request);
@@ -254,7 +262,7 @@ namespace EPBServer
             {
                 var r = projects[projName].BuildInfo[type];
                 Debug.Assert(r.Requested == true);
-                Debug.Assert(r.QueuePos == 0);
+                //Debug.Assert(r.QueuePos == 0);
 
                 r.State = ProjectState.Build;
                 r.Version = version;
@@ -393,9 +401,11 @@ namespace EPBServer
         }
 
         private string checkoutedConfig;
+        private string checkoutedProj;
 
         public string CheckoutConfig(string name)
         {
+            checkoutedProj = name;
             checkoutedConfig = configDir + "/" + name + ".cfg";
             return File.ReadAllText(checkoutedConfig);
         }
@@ -404,6 +414,13 @@ namespace EPBServer
         {
             File.WriteAllText(checkoutedConfig, file);
             checkoutedConfig = null;
+            checkoutedProj = null;
+        }
+
+        public void CheckinCancel()
+        {
+            checkoutedConfig = null;
+            checkoutedProj = null;
         }
     }
 }

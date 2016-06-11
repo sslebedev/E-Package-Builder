@@ -158,7 +158,10 @@ namespace EPBServer
                             addBuildRequest(Builder.BuildType.BuildFull);
                             break;
                     }
-                }
+                    }
+                    break;
+                case "CancelBuild":
+                    Builder.CancelBuildRequest(clientParam.UID, message);
                     break;
                 case "UpdateQueueTable":
                     Debug.Assert(false, "NotImplemented"); // TODO implement it

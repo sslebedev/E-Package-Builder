@@ -104,7 +104,7 @@
                 </FlowDocument>
             </RichTextBox>
         </GroupBox>
-        <Button Name="ButtonCancel" Content="Cancel Build" HorizontalAlignment="Left" Margin="554,309,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Name="ButtonCancel" Content="Cancel Build" HorizontalAlignment="Left" Margin="554,309,0,0" VerticalAlignment="Top" Width="75" Click="ButtonCancel_Click"/>
         <Image HorizontalAlignment="Left" Height="100" Margin="341,151,0,0" VerticalAlignment="Top" Width="100"/>
     </Grid>
 </Window>

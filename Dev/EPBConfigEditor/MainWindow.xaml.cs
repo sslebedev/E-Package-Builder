@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using EPBMessanger;
+using System.Diagnostics;
 
 
 namespace epb
@@ -35,6 +36,40 @@ namespace epb
 
     public partial class MainWindow : Window
     {
+        class ConfigContent
+        {
+            public string[] Paths;
+
+            public static ConfigContent ParseFromString(string str)
+            {
+                string[] paths = str.Split(new char[] { '\n' });
+                return new ConfigContent(paths);
+            }
+
+            public override string ToString()
+            {
+                return String.Format("{0}\n{1}\n{2}\n{3}\n{4}",
+                    Paths[0],
+                    Paths[1],
+                    Paths[2],
+                    Paths[3],
+                    Paths[4]);
+            }
+
+            public ConfigContent()
+            {
+                Paths = new string[] { "", "", "", "", "" };
+            }
+
+            private ConfigContent(string[] paths)
+            {
+                Debug.Assert(paths.Length == 5);
+                Paths = paths;
+            }
+        }
+
+        ConfigContent _checkoutedConfig;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -43,13 +78,6 @@ namespace epb
             ClientStorage.Client.OnServerConnected += OnServerConnected;
             ClientStorage.Client.OnServerDisconnected += OnServerDisconnected;
             ClientStorage.Client.OnServerMsgReceived += OnServerMsgReceived;
-
-            /*ClientStorage.Client.Connect("127.0.0.1", 11000, "EPBConfigEditor");
-
-            var msg = ClientStorage.Client.NewMessage();
-            msg.WriteName("GetProjects");
-            msg.Write("");
-            msg.Send();*/
         }
 
         private void OnServerMsgReceived(ReceivedMessage msg)
@@ -63,23 +91,13 @@ namespace epb
             }
             else if (msgNameFromServer == "CheckOutConfigFile")
             {
-                string[] FilePaths = msg.Read().Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-                MainWndAction(new Action(() =>
-                {
-                    textBox1.Text = FilePaths[0];
-                    textBox2.Text = FilePaths[1];
-                    textBox3.Text = FilePaths[2];
-                    textBox4.Text = FilePaths[3];
-                    textBox5.Text = FilePaths[4];
-                }));
+                _checkoutedConfig = ConfigContent.ParseFromString(msg.Read());
+                MainWndAction(() => SetActiveConfig(_checkoutedConfig));
             }
         }
 
         private void OnServerConnected()
         {
-            //MessageBox.Show("Connected");
-
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("GetProjects");
             msg.Write("");
@@ -88,20 +106,38 @@ namespace epb
 
         private void OnServerDisconnected()
         {
-            Delegate onServerDisconnected = new Action(() => { });
-
-            Dispatcher.Invoke(onServerDisconnected, null);
         }
 
-        private void MainWndAction(Delegate d)
+        private void MainWndAction(Action d)
         {
             Dispatcher.Invoke(d, null);
+        }
+
+        private void SetActiveConfig(ConfigContent cfg)
+        {
+            Debug.Assert(cfg.Paths.Length == 5);
+
+            textBox1.Text = cfg.Paths[0];
+            textBox2.Text = cfg.Paths[1];
+            textBox3.Text = cfg.Paths[2];
+            textBox4.Text = cfg.Paths[3];
+            textBox5.Text = cfg.Paths[4];
+        }
+
+        private ConfigContent SaveActiveConfig()
+        {
+            ConfigContent res = new ConfigContent();
+            res.Paths[0] = textBox1.Text;
+            res.Paths[1] = textBox2.Text;
+            res.Paths[2] = textBox3.Text;
+            res.Paths[3] = textBox4.Text;
+            res.Paths[4] = textBox5.Text;
+            return res;
         }
 
         private void listBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string selectedProject = listBox1.SelectedItem.ToString();
-            //MessageBox.Show(selectedProject + ".txt");
 
             if (((string)label2.Content).Length != 0)
             {
@@ -114,7 +150,6 @@ namespace epb
             msg.WriteName("CheckOutConfigFile");
             msg.Write(selectedProject);
             msg.Send();
-
         }
 
         private void button1_Click(object sender, RoutedEventArgs e)
@@ -125,11 +160,7 @@ namespace epb
             msg.Send();
 
             label2.Content = "";
-            textBox1.Text = "";
-            textBox2.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
-            textBox5.Text = "";
+            SetActiveConfig(new ConfigContent());
         }
 
         private void button2_Click(object sender, RoutedEventArgs e)
@@ -137,31 +168,50 @@ namespace epb
             CheckInConfig();
 
             label2.Content = "";
-            textBox1.Text = "";
-            textBox2.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
-            textBox5.Text = "";
+            SetActiveConfig(new ConfigContent());
         }
 
         private void CheckInConfig()
         {
-            string cfgFileNew = String.Format("{0}\n{1}\n{2}\n{3}\n{4}",
-                    textBox1.Text,
-                    textBox2.Text,
-                    textBox3.Text,
-                    textBox4.Text,
-                    textBox5.Text);
-
             var msg = ClientStorage.Client.NewMessage();
             msg.WriteName("CheckInConfigFile");
-            msg.Write(cfgFileNew);
+            msg.Write(SaveActiveConfig().ToString());
             msg.Send();
         }
 
         private void button3_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(textBox1.Text);
+            ConfigContent current = SaveActiveConfig();
+            current.Paths[0] = _checkoutedConfig.Paths[0];
+            SetActiveConfig(current);
+        }
+
+        private void button4_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigContent current = SaveActiveConfig();
+            current.Paths[1] = _checkoutedConfig.Paths[1];
+            SetActiveConfig(current);
+        }
+
+        private void button5_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigContent current = SaveActiveConfig();
+            current.Paths[2] = _checkoutedConfig.Paths[2];
+            SetActiveConfig(current);
+        }
+
+        private void button6_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigContent current = SaveActiveConfig();
+            current.Paths[3] = _checkoutedConfig.Paths[3];
+            SetActiveConfig(current);
+        }
+
+        private void button7_Click(object sender, RoutedEventArgs e)
+        {
+            ConfigContent current = SaveActiveConfig();
+            current.Paths[4] = _checkoutedConfig.Paths[4];
+            SetActiveConfig(current);
         }
 
         private void textBox1_TextChanged(object sender, TextChangedEventArgs e)
@@ -179,7 +229,5 @@ namespace epb
         {
             ClientStorage.Client.Disconnect();
         }
-
-
     }
 }

@@ -11,6 +11,7 @@
                 <MenuItem Header="Close" Click="MenuItem_Click_2"/>
             </MenuItem>
             <MenuItem Header="About">
+                <MenuItem Header="Program" Click="MenuItem_Click_3"/>
             </MenuItem>
         </Menu>
         <DataGrid Name="ProjectsView" AutoGenerateColumns="False" HorizontalAlignment="Left" Margin="10,24,0,0" VerticalAlignment="Top" Height="305" Width="312" SelectionChanged="ProjectsView_SelectionChanged_1" IsReadOnly="True">

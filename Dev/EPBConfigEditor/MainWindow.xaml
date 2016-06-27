@@ -9,6 +9,7 @@
                 <MenuItem Header="Close" Click="MenuItem_Click_2"/>
             </MenuItem>
             <MenuItem Header="About">
+                <MenuItem Header="Program" Click="MenuItem_Click_3"/>
             </MenuItem>
         </Menu>
         <ListBox HorizontalAlignment="Left" Margin="24,58,0,74" Name="listBox1" Width="149" SelectionChanged="listBox1_SelectionChanged" />

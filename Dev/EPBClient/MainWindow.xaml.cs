@@ -220,6 +220,12 @@ namespace EPBClient
             ClientStorage.Client.Disconnect();
         }
 
+        private void MenuItem_Click_3(object sender, RoutedEventArgs e)
+        {
+            string text = System.IO.File.ReadAllText("..\\..\\about_program.txt", System.Text.Encoding.GetEncoding(1251));
+            MessageBox.Show(text);
+        }
+
         private readonly ObservableCollection<ProjectsEntity> _projects = new ObservableCollection<ProjectsEntity>();
 
         public ObservableCollection<ProjectsEntity> Projects

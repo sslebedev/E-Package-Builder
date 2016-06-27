@@ -106,6 +106,12 @@ namespace epb
 
         private void OnServerDisconnected()
         {
+            MainWndAction(() => {
+                label2.Content = "";
+                listBox1.SelectedItem = null;
+                listBox1.ItemsSource = null;
+                SetActiveConfig(new ConfigContent());
+            });
         }
 
         private void MainWndAction(Action d)
@@ -137,6 +143,9 @@ namespace epb
 
         private void listBox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (listBox1.SelectedItem == null)
+                return;
+
             string selectedProject = listBox1.SelectedItem.ToString();
 
             if (((string)label2.Content).Length != 0)
@@ -160,6 +169,7 @@ namespace epb
             msg.Send();
 
             label2.Content = "";
+            listBox1.SelectedItem = null;
             SetActiveConfig(new ConfigContent());
         }
 
@@ -168,6 +178,7 @@ namespace epb
             CheckInConfig();
 
             label2.Content = "";
+            listBox1.SelectedItem = null;
             SetActiveConfig(new ConfigContent());
         }
 
@@ -228,6 +239,12 @@ namespace epb
         private void MenuItem_Click_2(object sender, RoutedEventArgs e)
         {
             ClientStorage.Client.Disconnect();
+        }
+
+        private void MenuItem_Click_3(object sender, RoutedEventArgs e)
+        {
+            string text = System.IO.File.ReadAllText("..\\..\\about_program.txt", System.Text.Encoding.GetEncoding(1251));
+            MessageBox.Show(text);
         }
     }
 }
